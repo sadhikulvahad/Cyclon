@@ -1,0 +1,262 @@
+{{> admin/header}}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+
+        .box h2 {
+            margin-top: 0;
+        }
+
+        .item {
+            margin-bottom: 10px;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <!-- Brands Box -->
+            <div class="col-md-6">
+                <div class="box">
+                    <h2>Brands</h2>
+                    <div id="brands-list">
+                        {{#each brands}}
+                        <div class="item d-flex justify-content-between align-items-center">
+                            <span>{{name}}</span>
+                            <div>
+                                <button class="btn btn-primary btn-sm mr-2"
+                                    onclick="showEditModal('{{_id}}', '{{name}}', 'brand')">Edit</button>
+                                <button class="btn btn-sm {{#if isListed}}btn-success{{else}}btn-secondary{{/if}}"
+                                    onclick="toggleActive('{{_id}}', {{isListed}}, this)">
+                                    {{#if isListed}}Deactivate{{else}}Activate{{/if}}
+                                </button>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    <div class="buttons">
+                        <button class="btn btn-success" onclick="showAddModal('brand')">Add New Brand</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types Box -->
+            <div class="col-md-6">
+                <div class="box">
+                    <h2>Types</h2>
+                    <div id="types-list">
+                        {{#each types}}
+                        <div class="item d-flex justify-content-between align-items-center">
+                            <span>{{name}}</span>
+                            <div>
+                                <button class="btn btn-primary btn-sm mr-2"
+                                    onclick="showEditModal('{{_id}}', '{{name}}', 'type')">Edit</button>
+                                <button class="btn btn-sm {{#if isListed}}btn-success{{else}}btn-secondary{{/if}}"
+                                    onclick="toggleActive('{{_id}}', {{isListed}}, this)">
+                                    {{#if isListed}}Deactivate{{else}}Activate{{/if}}
+                                </button>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    <div class="buttons">
+                        <button class="btn btn-success" onclick="showAddModal('type')">Add New Type</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Modal -->
+            <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addModalLabel">Add New Item</h5>
+                            {{#if error}}
+                            <div class="alert alert-danger">
+                                {{error}}
+                            </div>
+                            {{/if}}
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addForm">
+                                <div class="form-group">
+                                    <label for="newItemName">Item Name</label>
+                                    <input type="text" class="form-control" id="newItemName"
+                                        placeholder="Enter item name">
+                                </div>
+                                <input type="hidden" id="addCategory">
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="$('#addModal').modal('hide');">Close</button>
+                            <button type="button" class="btn btn-primary" onclick=addItem()>Add Item</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Modal -->
+            <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">Edit Item</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editForm">
+                                <div class="form-group">
+                                    <label for="editItemName">Item Name</label>
+                                    <input type="text" class="form-control" id="editItemName"
+                                        placeholder="Enter new item name">
+                                </div>
+                                <input type="hidden" id="editCategoryId">
+                                <input type="hidden" id="editCategory">
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="$('#editModal').modal('hide');">Close</button>
+                            <button type="button" class="btn btn-primary" id="updateItem" onclick=editItem()>Save
+                                changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            <script>
+                console.log(typeof $);
+
+                function showAddModal(category) {
+                    document.getElementById('addCategory').value = category;
+                    $('#addModal').modal('show');
+                }
+
+                function showEditModal(id, name, category) {
+                    document.getElementById('editItemName').value = name;
+                    document.getElementById('editCategoryId').value = id;
+                    document.getElementById('editCategory').value = category;
+                    $('#editModal').modal('show');
+                }
+
+                function addItem() {
+                    const name = document.getElementById('newItemName').value;
+                    const categoryType = document.getElementById('addCategory').value;
+                    if (name && categoryType) {
+                        $.ajax({
+                            url: '/admin/addCategory',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ name, categoryType }),
+                            success: function (response) {
+                                if (response.error) {
+                                    alert(response.error);
+                                } else {
+                                    alert(response.message);
+                                    $('#addModal').modal('hide')
+                                    location.reload()
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error:', error);
+                            }
+                        });
+                    }
+                }
+
+                function editItem() {   
+
+                    const name = document.getElementById('editItemName').value;
+                    const categoryType = document.getElementById('editCategory').value;
+                    const id = document.getElementById('editCategoryId').value;
+                    console.log(name)
+                    if (name && id && categoryType) {
+                        console.log(name)
+                        $.ajax({
+
+                            url: '/admin/editCategory',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ id, name, categoryType }),
+                            success: function (response) {
+                                if (response.error) {
+                                    alert(response.error);
+                                } else {
+                                    alert(response.message);
+                                    $('#editModal').modal('hide')
+                                    location.reload()
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error:', error);
+                            }
+                        })
+                    } else {
+                        alert('Please fill out all fields.');
+                    }
+                }
+
+
+                function toggleActive(id, currentStatus, button) {
+                    const newStatus = !currentStatus;
+                    $.ajax({
+                        url: '/admin/toggleCategoryStatus',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ id, currentStatus: newStatus }),
+                        success: function (response) {
+                            if (response.error) {
+                                alert(response.error);
+                            } else {
+                                alert(response.message);
+                                // Update button text and class based on the new status
+                                if (newStatus) {
+                                    button.textContent = 'Deactivate';
+                                    button.classList.remove('btn-secondary');
+                                    button.classList.add('btn-success');
+                                } else {
+                                    button.textContent = 'Activate';
+                                    button.classList.remove('btn-success');
+                                    button.classList.add('btn-secondary');
+                                }
+                                location.reload()
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error:', error);
+                        }
+                    });
+                }
+
+            </script>
+</body>
+
+</html>

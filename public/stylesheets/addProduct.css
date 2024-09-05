@@ -1,0 +1,47 @@
+body {
+    background-color: #f5f5f5;
+}
+
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.nav-link {
+    color: #333;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+/* 
+.nav-link.active {
+    color: #007bff;
+} */
+
+.nav-link i {
+    margin-right: 10px;
+}
+
+.main-content {
+    width: calc(100% - 250px);
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #007bff;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}

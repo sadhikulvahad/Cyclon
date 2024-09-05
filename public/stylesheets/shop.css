@@ -1,0 +1,160 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.container {
+    margin-top: 20px;
+}
+
+.product-card {
+    background-color: #333;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.product-details {
+    background-color: #ddd;
+    padding: 15px;
+}
+
+.product-title {
+    color: rgb(0, 0, 0);
+    font-weight: 100;
+    margin-bottom: 5px;
+}
+
+.product-rating {
+    color: #ffc107;
+}
+
+.product-price {
+    color: #000000;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.sidebar {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-list li {
+    margin-bottom: 10px;
+}
+
+.sidebar-list li a {
+    display: block;
+    padding: 8px 15px;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-list li a:hover {
+    background-color: #e9ecef;
+}
+
+.footer {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.footer-links {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+.footer-links a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+.payment-icons {
+    margin-top: 10px;
+}
+
+.payment-icons img {
+    margin: 0 5px;
+}
+
+.login-button {
+    background-color: #007bff;
+    /* Blue background color */
+    color: white;
+    /* White text */
+    padding: 10px 20px;
+    /* Add some padding */
+    border: none;
+    /* Remove default border */
+    border-radius: 5px;
+    /* Add rounded corners */
+    cursor: pointer;
+    /* Change cursor to pointer */
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+    /* Slightly darker blue on hover */
+}
+.logo {
+    max-width: 130%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    margin-left: -100px;
+}
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+}
+
+footer p {
+    margin: 20px 0;
+    font-size: 20px;
+}
+
+footer a {
+    color: #ffab40;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 20px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}

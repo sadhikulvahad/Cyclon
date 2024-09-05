@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyclon</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/shop.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <style>
+        .text-mute {
+            font-size: 0.8rem;
+            color: #141313;
+        }
+    </style>
+
+</head>
+
+<body>
+    {{> user/header}}
+    <nav aria-label="breadcrumb ">
+        <ol class="breadcrumb ml-5">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+            <li class="breadcrumb-item active" aria-current="page"></li>
+        </ol>
+    </nav>
+
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <h3 class="sidebar-title">Category</h3>
+                    <ul class="sidebar-list">
+                        {{#each category}}
+                        <li><a href="#">{{name}}</a></li>
+                        {{/each}}
+                    </ul>
+                    <h3 class="sidebar-title">Brands</h3>
+                    <ul class="sidebar-list">
+                        {{#each brand}}
+                        <li><a href="#">{{name}}</a></li>
+                        {{/each}}
+                    </ul>
+                    <h3 class="sidebar-title">Customer Review</h3>
+                    <div class="rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        &up
+                    </div>
+                    <h3 class="sidebar-title">Price</h3>
+                    <input type="range" min="5000" max="150000" value="0">
+                    <h3 class="sidebar-title">Number of Gears</h3>
+                    <div class="col-md-6">
+                        <div class="form-group mb-4">
+                            <select class="form-select border" name="numberOfGears">
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="7">7</option>
+                                <option value="9">9</option>
+                            </select>
+                            <div id="numberOfGears-error" class="error-message"></div>
+                        </div>
+                    </div>
+                    <h3 class="sidebar-title">Brake Style</h3>
+                    <div class="form-group mb-4">
+                        <select class="form-select border" name="brakeStyle">
+                            <option value="Disc">Disc</option>
+                            <option value="Coaster">Coaster</option>
+                            <option value="Linear Pull">Linear Pull</option>
+                        </select>
+                        <div id="brakeStyle-error" class="error-message"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="row">
+                    {{#each products}}
+                    <div class="col-md-12 mb-4">
+                        <a href="/product/{{_id}}" class="text-decoration-none">
+                            <div class="product-card d-flex">
+                                <img src="/uploads/resized/{{productImages.[0]}}" class="product-image"
+                                    alt="{{productName}} style=" max-width: 200px; height: auto;""
+                                    style="max-width: 200px;">
+                                <div class="product-details ">
+                                    <h4 class="product-title"><b>{{productName}}</b></h4>
+                                    <p class="text-muted">{{description}}</p>
+                                    <div class="product-rating">
+                                        {{#each product.rating}}
+                                        <i class="fas fa-star"></i>
+                                        {{/each}}
+                                    </div>
+                                    <span class="product-price">₹{{salePrice}}</span>
+                                    <span class="text-mute"> <del>M.R.P: ₹{{regularPrice}}</del></span>
+                                    <p class="text-mute">Free Delivery Mon, <b>12 sep</b></p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {{/each}}
+                </div>
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+                        {{#each pages}}
+                        <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+                            <a class="page-link" href="?page={{this}}&search={{search}}">{{this}}</a>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <!-- Footer Section -->
+    {{> user/footer }}
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

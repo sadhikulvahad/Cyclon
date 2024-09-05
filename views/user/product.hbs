@@ -1,0 +1,202 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html,
+        body {
+            overflow-x: hidden;
+        }
+
+        .center-image {
+            display: flex;
+            justify-content: center;
+            height: 100%;
+        }
+
+        #magnifier-container {
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .related-products {
+            margin-top: 15rem;
+        }
+    </style>
+</head>
+
+
+<body>
+    <!-- Header Section -->
+    {{> user/header}}
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Product</li>
+        </ol>
+    </nav>
+
+    <!-- Product Details Section -->
+    <div class="row">
+        <div class="col-12 col-md-5">
+            <div class="product-image" id="magnifier-container">
+                <div class="product-image center-image magnifier-thumb-wrapper">
+                    <img src="/uploads/resized/{{products.productImages.[0]}}" alt="{{products.productName}}"
+                        class="img-fluid" id="main-image">
+                    <div id="magnifier-lens"></div>
+                </div>
+                <div class="d-flex mt-3">
+                    {{#each products.productImages}}
+                    <img src="/uploads/resized/{{this}}" alt="{{products.productName}}" class="img-thumbnail me-2"
+                        style="width: 150px; height: 150px;">
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-7">
+            <div class="product-details">
+
+                <!-- Product Name -->
+                <h2>{{products.productName}}</h2>
+
+                <!-- Product Description -->
+                <p class="mt-4">{{products.description}}</p>
+
+                <!-- Product Rating -->
+                <div class="product-rating">
+                    {{#each products.productRating}}
+                    <i class="{{this}}"></i>
+                    {{/each}}
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="pricing mt-3">
+                    <h3 class="text-danger">₹{{products.salePrice}}</h3>
+                    <span class="text-muted"><del>M.R.P:₹{{products.regularPrice}}</del></span>
+                </div>
+
+                <!-- Product Colors -->
+                <div class="colors d-flex mt-3">
+                    {{#each productColors}}
+                    <div class="{{this}}"></div>
+                    {{/each}}
+                </div>
+
+                <!-- Buttons -->
+                <button class="btn btn-primary mt-3">Add to Cart</button>
+                <button class="btn btn-success mt-3">Buy Now</button>
+
+                <!-- Delivery Information -->
+                <div class="delivery mt-3">
+                    <img src="{{deliveryIcon}}" alt="Delivery" width="20px" height="20px">
+                    <span>{{deliveryInfo}}</span><br>
+                    <span class="text-muted" style="font-size: 10px;">{{deliveryDetails}}</span>
+                </div>
+
+                <!-- Return Policy -->
+                <div class="return-policy mt-3">
+                    <img src="{{returnIcon}}" alt="Return" width="20px" height="20px">
+                    <span>{{returnInfo}}</span><br>
+                    <span class="text-muted" style="font-size: 10px;">{{returnDetails}}</span>
+                </div>
+
+                <!-- Product Specifications -->
+                <h4 class="mt-4">About the Product</h4>
+                <table class="table">
+                    {{#each productSpecs}}
+                    <tr>
+                        <td>{{this.label}}</td>
+                        <td>{{this.value}}</td>
+                    </tr>
+                    {{/each}}
+                </table>
+
+                <!-- User Review & Rating -->
+                <h4>User Review & Rating</h4>
+                <div class="reviews">
+                    <div class="d-flex align-items-center">
+                        {{#each userRating}}
+                        <img src="{{this}}" alt="Star Rating" width="15px" height="15px" class="me-1">
+                        {{/each}}
+                    </div>
+                    <p>Reviewed in {{userReviewLocation}} on {{userReviewDate}}</p>
+                    <p>{{userReviewText}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products Section -->
+    <div class="related-products">
+        <h4>Related Products</h4>
+        <div class="row">
+            {{#each related}}
+            <div class="col-md-2">
+                <a href="/product/{{_id}}" class="text-decoration-none">
+                    <div class="card">
+                        <img src="/uploads/resized/{{this.productImages.[0]}}" class="card-img-top"
+                            alt="Related Product">
+                        <div class="card-body">
+                            <p class="card-text">{{productName}}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const img = document.getElementById('main-image');
+            const lens = document.getElementById('magnifier-lens');
+            const container = document.getElementById('magnifier-container');
+
+            lens.style.width = "200px";
+            lens.style.height = "200px";
+            lens.style.position = "absolute";
+            lens.style.border = "1px solid #000";
+            lens.style.cursor = "none";
+            lens.style.borderRadius = '7.5px'
+
+            container.addEventListener('mousemove', moveLens);
+            container.addEventListener('mouseleave', () => {
+                lens.style.display = 'none';
+            });
+            container.addEventListener('mouseenter', () => {
+                lens.style.display = 'block';
+            });
+
+            function moveLens(e) {
+                const pos = getCursorPos(e);
+                let x = pos.x - (lens.offsetWidth / 2);
+                let y = pos.y - (lens.offsetHeight / 2);
+
+                if (x > img.width - lens.offsetWidth) { x = img.width - lens.offsetWidth; }
+                if (x < 0) { x = 0; }
+                if (y > img.height - lens.offsetHeight) { y = img.height - lens.offsetHeight; }
+                if (y < 0) { y = 0; }
+
+                lens.style.left = x + "px";
+                lens.style.top = y + "px";
+                lens.style.backgroundImage = "url('" + img.src + "')";
+                lens.style.backgroundSize = (img.width * 3) + "px " + (img.height * 3) + "px";
+                lens.style.backgroundPosition = "-" + (x * 3) + "px -" + (y * 3) + "px";
+            }
+
+            function getCursorPos(e) {
+                const rect = img.getBoundingClientRect();
+                return {
+                    x: e.pageX - rect.left - window.pageXOffset,
+                    y: e.pageY - rect.top - window.pageYOffset
+                };
+            }
+        });
+    </script>
+</body>

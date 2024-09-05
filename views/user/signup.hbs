@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheets/signup.css">
+    <style>
+        .input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-container input {
+            padding-right: 50px;
+            /* Space for the button */
+        }
+
+        .input-container .btn-toggle {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+
+        .input-container .btn-toggle:hover {
+            color: #495057;
+        }
+
+        .eye-button {
+            position: absolute;
+            right: 0;
+            top: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="text-center">
+            <div class="col-md-2">
+                <a href="#">
+                    <img src="/images/Logo.png" alt="Logo" class="logo">
+                </a>
+            </div>
+            <div class="signup-box p-4 rounded">
+                <h2>SignUp</h2>
+                <form id="signform" method="post" action="/signup">
+                    {{#if exist}}
+                    <div class="alert alert-danger">
+                        {{exist}}
+                    </div>
+                    {{/if}}
+                    <div class="mb-4">
+                        <label for="fullName" class="form-label form-text-left">Full Name</label>
+                        <input type="text" class="form-control" id="fullName" placeholder="Full Name" name="name">
+                    </div>
+                    <div id="error1" class="error-message"></div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label form-text-left">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Email" name="email">
+                    </div>
+                    <div id="error2" class="error-message"></div>
+                    <div class="mb-3 position-relative">
+                        <label for="password" class="form-label form-text-left">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="Password"
+                            name="password">
+                        <button type="button" class="btn-toggle eye-button" onclick="togglePassword('password')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div id="error3" class="error-message"></div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label form-text-left">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password"
+                            name="cPassword">
+                    </div>
+                    <div id="error4" class="error-message"></div>
+                    {{#if message}}
+                    <div class="alert alert-danger">
+                        {{message}}
+                    </div>
+                    {{/if}}
+                    <div class="form-text-right mb-3">
+                        <a href="/login" class="text-muted">Login</a>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                    <div class="form-text-center mt-2">
+                        <p>OR</p>
+                        <a href="/auth/google" class="btn btn-light border">
+                            <img src="/images/Google.png" alt="Google" style="width: 30px;">
+                            Signup with Google
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const nameid = document.getElementById("fullName");
+            const emailid = document.getElementById("email");
+            const passid = document.getElementById("password");
+            const cPassid = document.getElementById("confirmPassword");
+            const error1 = document.getElementById("error1");
+            const error2 = document.getElementById("error2");
+            const error3 = document.getElementById("error3");
+            const error4 = document.getElementById("error4");
+            const signform = document.getElementById("signform");
+
+            if (!nameid || !emailid || !passid || !cPassid || !error1 || !error2 || !error3 || !error4 || !signform) {
+                console.log('One or more elements not found');
+                return;
+            }
+
+            function nameValidateChecking() {
+                const nameval = nameid.value;
+                const namepattern = /^[A-Za-z\s]+$/;
+
+                if (nameval.trim() === "") {
+                    error1.style.display = "block";
+                    error1.innerHTML = "Please enter a valid name";
+                } else if (!namepattern.test(nameval)) {
+                    error1.style.display = "block";
+                    error1.innerHTML = "Name can only contain Alphabets and spaces";
+                } else {
+                    error1.style.display = "none";
+                    error1.innerHTML = "";
+                }
+            }
+
+            function emailValidateChecking() {
+                const emailval = emailid.value;
+                const emailpattern = /^[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+                if (!emailpattern.test(emailval)) {
+                    error2.style.display = "block";
+                    error2.innerHTML = "Invalid email";
+                } else {
+                    error2.style.display = "none";
+                    error2.innerHTML = "";
+                }
+            }
+
+            function passValidateChecking() {
+                const passval = passid.value;
+                const cpassval = cPassid.value;
+                const alpha = /[a-zA-Z]/;
+                const digit = /\d/;
+
+                if (passval.length < 8) {
+                    error3.style.display = "block";
+                    error3.innerHTML = "Password must be at least 8 characters";
+                } else if (!alpha.test(passval) || !digit.test(passval)) {
+                    error3.style.display = "block";
+                    error3.innerHTML = "Password should contain both numbers and alphabets";
+                } else {
+                    error3.style.display = "none";
+                    error3.innerHTML = "";
+                }
+
+                if (passval !== cpassval) {
+                    error4.style.display = "block";
+                    error4.innerHTML = "Passwords do not match";
+                } else {
+                    error4.style.display = "none";
+                    error4.innerHTML = "";
+                }
+            }
+
+            signform.addEventListener("submit", function (e) {
+                nameValidateChecking();
+                emailValidateChecking();
+                passValidateChecking();
+
+                if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        function togglePassword(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const showHideButton = passwordField.nextElementSibling;
+            const icon = showHideButton.querySelector('i')
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordField.type = "password";
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

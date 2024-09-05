@@ -1,0 +1,219 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    max-width: 1920px;
+    height: 4637px;
+    margin: 0 auto;
+    background-color: #f4f4f4;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1680px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    background-color: white;
+    padding: 20px 0;
+    border-bottom: 2px solid #ddd;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px; /* Adjust height as needed */
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.logo img {
+    width: 180px;
+    margin-left: 20px; /* Align logo to the left */
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+    position: absolute;
+    right: 20px;
+    transform: translateX(-20px);
+}
+
+.login-btn, .search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.search-btn img {
+    width: 25px;
+}
+
+/* Banner Section */
+.banner {
+    background-color: #2b5c6b;
+    color: white;
+    padding: 100px 0;
+    height: 650px;
+}
+
+.banner-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.banner-text {
+    max-width: 700px;
+    margin-left: 100px;
+}
+
+.banner-text h1 {
+    font-size: 54px;
+    margin-bottom: 20px;
+}
+
+.banner-text p {
+    font-size: 24px;
+    margin-bottom: 40px;
+}
+
+.btn {
+    background-color: #ffab40;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+.btn:hover {
+    background-color: #ffa726;
+}
+
+.banner-image img {
+    width: 500px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.pagination a {
+    color: white;
+    background-color: #ffab40;
+    padding: 10px 15px;
+    margin: 0 5px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+/* Our Cycle Section */
+.products {
+    padding: 100px 0;
+    background-color: white;
+}
+
+.products h2 {
+    text-align: center;
+    font-size: 42px;
+    margin-bottom: 80px;
+}
+
+.product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 150px;
+}
+
+.product-item:nth-child(odd) .product-image {
+    order: 2;
+}
+
+.product-text {
+    width: 45%;
+    text-align: center;
+    margin-right: 50px; /* Align text properly */
+}
+
+.product-text h3 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.product-text p {
+    font-size: 22px;
+    color: #777;
+    margin-bottom: 30px;
+}
+
+.product-image {
+    width: 50%;
+    text-align: center;
+}
+
+.product-image img {
+    width: 80%;
+    border-radius: 15px;
+}
+
+/* About Section */
+.about {
+    background-color: #2b5c6b;
+    color: white;
+    padding: 120px 0;
+    text-align: center;
+}
+
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.about img {
+    width: 50%;
+    margin: 50px 0;
+    border-radius: 15px;
+}
+
+.about p {
+    font-size: 26px;
+    line-height: 1.8;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+}
+
+footer p {
+    margin: 20px 0;
+    font-size: 20px;
+}
+
+footer a {
+    color: #ffab40;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 20px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}

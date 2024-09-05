@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheets/login.css">
+    <style>
+        .input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-container input {
+            padding-right: 50px;
+        }  
+
+        .input-container .btn-toggle:hover {
+            color: #0056b3;
+        }
+
+        .eye-button {
+            position: absolute;
+            right: 7px;
+            top: 70%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+            font-size: 1.2rem;
+        }
+
+        .eye-button:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Logo Section -->
+    <div class="logo-container">
+        <img src="/images/Logo.png" alt="Logo">
+    </div>
+
+    <div class="login-container">
+        <h1>Login</h1>
+        {{#if error}}
+        <div class="alert alert-danger">
+            {{error}}
+        </div>
+        {{/if}}
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="mb-3 position-relative">
+                <label for="password" class="form-label form-text-left">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Password" name="password">
+                <button type="button" class="btn-toggle eye-button" onclick="togglePassword('password')">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+            <div class="actions">
+                <a href="{{forgotPasswordLink}}">Forgot Password</a>
+                <a href="/signup" class="signup">signup</a>
+            </div>
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+
+        <p class="or-divider">OR</p>
+        <a href="/auth/google" class="btn btn-google w-100"><img src="/images/Google.png" alt="google"
+                style="width: 30px;">Login with Google</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const showHideButton = passwordField.nextElementSibling;
+            const icon = showHideButton.querySelector('i')
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordField.type = "password";
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+.product-image img {
+    width: 90%; /* Decreased image size */
+    height: auto;
+}
+.product-details {
+    margin-left: -50px; /* Moved the section to the left */
+}
+.product-details .colors div {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.related-products .card {
+    margin-bottom: 20px;
+}
+.zoom {
+    width: 300px; /* Initial width of the image */
+    transition: transform 0.5s ease;
+}
+
+.zoom:hover {
+    transform: scale(1.2); /* Zoom to 150% */
+}

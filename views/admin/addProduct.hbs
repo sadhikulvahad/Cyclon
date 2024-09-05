@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+</head>
+
+<style>
+    .error-message {
+        color: red;
+    }
+
+    .thumbnails-container {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .thumbnail {
+        margin-right: 10px;
+    }
+
+    .image-cropper {
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+    .brand-category-container {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .form-group {
+        width: 48%;
+    }
+
+    .modal-dialog {
+        max-width: 90vw;
+        width: auto;
+        margin: 0.5rem auto;
+    }
+
+    .modal-content {
+        max-height: 80vh;
+        /* Ensures modal content does not overflow */
+        overflow: auto;
+    }
+
+    .image-cropper {
+        max-height: 80vh;
+        /* Adjust based on your needs */
+        width: 100%;
+        object-fit: contain;
+    }
+
+
+    .modal-body {
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .modal-body img {
+        width: 100%;
+        height: auto;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .modal {
+        z-index: 1050;
+    }
+
+    .form-control,
+    .form-select {
+        max-width: 100%;
+        /* Ensure inputs don't overflow */
+    }
+
+    .modal-body-edit {
+        width: 100%;
+        height: auto;
+        box-sizing: border-box;
+    }
+</style>
+
+<body>
+
+    {{> admin/header}}
+
+    <div class="main-content p-4">
+        <!-- Products Section -->
+        <h2 class="mb-3">Products</h2>
+        <div class="table-responsive mb-5">
+            <table id="productTable" class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each products}}
+                    <tr>
+                        <td>{{productName}}</td>
+                        <td>{{category}}</td>
+                        <td>{{salePrice}}</td>
+                        <td>{{quantity}}</td>
+                        <td>
+                            {{#if isBlocked}}
+                            <span class="text-danger">✖ Not Available</span>
+                            {{else}}
+                            <span class="text-success">✔ Available</span>
+                            {{/if}}
+                        </td>
+                        <td>
+                            {{#if isBlocked}}
+                            <button class="btn btn-secondary btn-sm" style="background-color: #4CAF50; color: white;">
+                                <a href="/admin/unblockProduct?id={{_id}}"
+                                    style="color: white; text-decoration: none;">Unblock</a>
+                            </button>
+                            {{else}}
+                            <button class="btn btn-secondary btn-sm" style="background-color: #f44336; color: white;">
+                                <a href="/admin/blockProduct?id={{_id}}"
+                                    style="color: white; text-decoration: none;">Block</a>
+                            </button>
+                            {{/if}}
+                            <button type="button" class="btn btn-primary btn-sm ml-2" data-id="{{_id}}">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add New Product Section -->
+        <div class="main-content p-4">
+            <h2 class="mb-3">Add New Product</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <form method="POST" action="/admin/addProduct" enctype="multipart/form-data"
+                                onsubmit="return validateForm()">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label for="product_name" class="form-label">Product Name</label>
+                                            <input type="text" placeholder="Type here" name="productName"
+                                                class="form-control border" id="product_name">
+                                            <div id="productName-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 brand-category-container">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Brand</label>
+                                            <select class="form-select border" name="brand">
+                                                {{#each brand}}
+                                                <option value="{{name}}">{{name}}</option>
+                                                {{/each}}
+                                            </select>
+                                            <div id="brand-error" class="error-message"></div>
+                                        </div>
+
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Category</label>
+                                            <select class="form-select border" name="category">
+                                                {{#each category}}
+                                                <option value="{{name}}">{{name}}</option>
+                                                {{/each}}
+                                            </select>
+                                            <div id="category-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group col-lg-12">
+                                        <label class="form-label">Full description</label>
+                                        <textarea placeholder="Type here" id="descriptionid" name="description"
+                                            class="form-control border" rows="4"></textarea>
+                                        <div id="description-error" class="error-message"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Regular Price</label>
+                                            <input placeholder="$" name="regularPrice" type="text"
+                                                class="form-control border">
+                                            <div id="regularPrice-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Sale Price</label>
+                                            <input placeholder="$" name="salePrice" type="text"
+                                                class="form-control border">
+                                            <div id="salePrice-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Quantity</label>
+                                            <input placeholder="" name="quantity" type="text"
+                                                class="form-control border">
+                                            <div id="quantity-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Color</label>
+                                            <select class="form-select border" name="color">
+                                                <option value="Red">Red</option>
+                                                <option value="Grey">Grey</option>
+                                                <option value="White">White</option>
+                                                <option value="Black">Black</option>
+                                            </select>
+                                            <div id="color-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- New input fields for brakeStyle and number of gears -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Brake Style</label>
+                                            <select class="form-select border" name="brakeStyle">
+                                                <option value="Disc">Disc</option>
+                                                <option value="Coaster">Coaster</option>
+                                                <option value="Linear Pull">Linear Pull</option>
+                                            </select>
+                                            <div id="brakeStyle-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Number of Gears</label>
+                                            <select class="form-select border" name="numberOfGears">
+                                                <option value="3">3</option>
+                                                <option value="5">5</option>
+                                                <option value="7">7</option>
+                                                <option value="9">9</option>
+                                            </select>
+                                            <div id="numberOfGears-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Image Upload Section -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Image 1</label>
+                                            <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
+                                                id="previewImage1" class="img-fluid"
+                                                style="max-width: 200px; max-height: 200px; display: none;">
+                                            <input class="form-control border" type="file" name="image1" id="input1"
+                                                accept="image/png, image/jpeg, image/jpg"
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal1', 'croppedImageInput1', 'cropBtn1', 'previewImage1')">
+                                            <div id="image1-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Image 2</label>
+                                            <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
+                                                id="previewImage2" class="img-fluid"
+                                                style="max-width: 200px; max-height: 200px; display: none;">
+                                            <input class="form-control border" type="file" name="image2" id="input2"
+                                                accept="image/png, image/jpeg, image/jpg"
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal2', 'croppedImageInput2', 'cropBtn2', 'previewImage2')">
+                                            <div id="image2-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Image 3</label>
+                                            <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
+                                                id="previewImage3" class="img-fluid"
+                                                style="max-width: 200px; max-height: 200px; display: none;">
+                                            <input class="form-control border" type="file" name="image3" id="input3"
+                                                accept="image/png, image/jpeg, image/jpg"
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal3', 'croppedImageInput3', 'cropBtn3', 'previewImage3')">
+                                            <div id="image3-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label class="form-label">Image 4</label>
+                                            <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
+                                                id="previewImage4" class="img-fluid"
+                                                style="max-width: 200px; max-height: 200px; display: none;">
+                                            <input class="form-control border" type="file" name="image4" id="input4"
+                                                accept="image/png, image/jpeg, image/jpg"
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal4', 'croppedImageInput4', 'cropBtn4', 'previewImage4')">
+                                            <div id="image4-error" class="error-message"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary w-100" type="submit">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals for Image Cropping -->
+        <!-- Modal 1 -->
+        <div class="modal fade" id="cropModal1" tabindex="-1" aria-labelledby="cropModal1Label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cropModal1Label">Crop Image 1</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="cropperImage1" class="image-cropper" style="height: 600px">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="cropBtn1">Crop</button>
+                        <button type="button" class="btn btn-secondary cancelButton"
+                            data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal 2 -->
+        <div class="modal fade" id="cropModal2" tabindex="-1" aria-labelledby="cropModal2Label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cropModal2Label">Crop Image 2</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="cropperImage2" class="image-cropper" src="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="cropBtn2">Crop</button>
+                        <button type="button" class="btn btn-secondary cancelButton"
+                            data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal 3 -->
+        <div class="modal fade" id="cropModal3" tabindex="-1" aria-labelledby="cropModal3Label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cropModal3Label">Crop Image 3</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="cropperImage3" class="image-cropper" src="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="cropBtn3">Crop</button>
+                        <button type="button" class="btn btn-secondary cancelButton"
+                            data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal 4 -->
+        <div class="modal fade" id="cropModal4" tabindex="-1" aria-labelledby="cropModal4Label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cropModal4Label">Crop Image 4</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="cropperImage4" class="image-cropper" src="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="cropBtn4">Crop</button>
+                        <button type="button" class="btn btn-secondary cancelButton"
+                            data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body-edit">
+                    <form id="editProductForm" method="POST" action="/admin/updateProduct"
+                        enctype="multipart/form-data">
+                        <input type="hidden" id="editProductId" name="productId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Product Name</label>
+                                    <input type="text" id="editProductName" name="productName"
+                                        class="form-control border">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Brand</label>
+                                    <select id="editBrand" class="form-select border" name="brand">
+                                        <option value="{{name}}">{{name}}</option>
+                                        {{#each brand}}
+                                        <option value="{{name}}">{{name}}</option>
+                                        {{/each}}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Category</label>
+                                    <select id="editCategory" class="form-select border" name="category">
+                                        <option value="{{name}}">{{name}}</option>
+                                        {{#each category}}
+                                        <option value="{{name}}">{{name}}</option>
+                                        {{/each}}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Full Description</label>
+                            <textarea id="editDescription" name="description" class="form-control border"
+                                rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Regular Price</label>
+                                    <input type="text" id="editRegularPrice" name="regularPrice"
+                                        class="form-control border">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Sale Price</label>
+                                    <input type="text" id="editSalePrice" name="salePrice" class="form-control border">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="text" id="editQuantity" name="quantity" class="form-control border">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Color</label>
+                                    <select id="editColor" class="form-select border" name="color">
+                                        <option value="Red">Red</option>
+                                        <option value="Grey">Grey</option>
+                                        <option value="White">White</option>
+                                        <option value="Black">Black</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Brake Style</label>
+                                    <select id="editBrakeStyle" class="form-select border" name="brakeStyle">
+                                        <option value="Disc">Disc</option>
+                                        <option value="Coaster">Coaster</option>
+                                        <option value="Linear Pull">Linear Pull</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Number of Gears</label>
+                                    <select id="editNumberOfGears" class="form-select border" name="numberOfGears">
+                                        <option value="3">3</option>
+                                        <option value="5">5</option>
+                                        <option value="7">7</option>
+                                        <option value="9">9</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload Section -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Image 1</label>
+                                    <img id="editImage1Preview" src="" alt="Image 1 Preview" class="img-fluid mb-2"
+                                        style="max-width: 100%;">
+                                    <input class="form-control border" type="file" name="image1" id="editImage1Input"
+                                        accept="image/png, image/jpeg, image/jpg">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Image 2</label>
+                                    <img id="editImage2Preview" src="" alt="Image 2 Preview" class="img-fluid mb-2"
+                                        style="max-width: 100%;">
+                                    <input class="form-control border" type="file" name="image2" id="editImage2Input"
+                                        accept="image/png, image/jpeg, image/jpg">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Image 3</label>
+                                    <img id="editImage3Preview" src="" alt="Image 3 Preview" class="img-fluid mb-2"
+                                        style="max-width: 100%;">
+                                    <input class="form-control border" type="file" name="image3" id="editImage3Input"
+                                        accept="image/png, image/jpeg, image/jpg">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Image 4</label>
+                                    <img id="editImage4Preview" src="" alt="Image 4 Preview" class="img-fluid mb-2"
+                                        style="max-width: 100%;">
+                                    <input class="form-control border" type="file" name="image4" id="editImage4Input"
+                                        accept="image/png, image/jpeg, image/jpg">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+    <script>
+        function viewImageAndOpenCropperModal(event, modalId, croppedImageInputId, cropBtnId, previewImageId) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const cropperImage = document.getElementById('cropperImage' + modalId.slice(-1));
+                cropperImage.src = e.target.result;
+
+                if (cropperImage.cropper) {
+                    cropperImage.cropper.destroy();
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById(modalId));
+                modal.show();
+
+                const cropper = new Cropper(cropperImage, {
+                    aspectRatio: NaN,
+                    viewMode: 1,
+                    responsive: true,
+                    autoCropArea: 1,
+                });
+
+
+                const cropBtn = document.getElementById(cropBtnId)
+
+                cropBtn.removeEventListener('click', cropAndCloseModal);
+
+                function cropAndCloseModal() {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 800,
+                        height: 800,
+                    });
+
+                    canvas.toBlob(function (blob) {
+                        const croppedImageUrl = URL.createObjectURL(blob);
+                        console.log(croppedImageUrl)
+                        const previewImage = document.getElementById(previewImageId);
+                        console.log(previewImage)
+                        previewImage.src = croppedImageUrl;
+                        console.log(previewImage.src)
+                        previewImage.style.display = 'block';
+
+                        const croppedImageInput = document.getElementById(croppedImageInputId);
+                        const fileList = new DataTransfer();
+                        console.log(fileList)
+                        fileList.items.add(new File([blob], file.name));
+                        croppedImageInput.files = new File([blob], file.name);
+
+                        URL.revokeObjectURL(croppedImageUrl);
+                    });
+
+                    cropper.destroy();
+                    modal.hide();
+                }
+                cropBtn.addEventListener('click', cropAndCloseModal, { once: true });
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        $(document).ready(function () {
+            $('.modal-footer').on('click', '.btn-secondary', function () {
+                const modalId = $(this).closest('.modal').attr('id');
+                $('#' + modalId).modal('hide');
+            });
+        });
+
+        function validateForm() {
+            let isValid = true;
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+            // Validate image inputs
+            ['image1', 'image2', 'image3', 'image4'].forEach((imageName, index) => {
+                const fileInput = document.getElementById('input' + (index + 1));
+                const file = fileInput.files[0];
+                const errorElement = document.getElementById(imageName + '-error');
+
+                if (file) {
+                    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                        errorElement.textContent = 'Invalid file type. Only JPEG, PNG, and JPG are allowed.';
+                        isValid = false;
+                    }
+                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                        errorElement.textContent = 'File size exceeds 2MB.';
+                        isValid = false;
+                    }
+                } else {
+                    errorElement.textContent = 'This field is required.';
+                    isValid = false;
+                }
+            });
+            return isValid;
+        }
+
+        // Attach validateForm function to form submission
+        document.querySelector('form').addEventListener('submit', function (event) {
+            if (!validateForm()) {
+                event.preventDefault(); // Prevent form submission if validation fails
+            }
+        });
+
+        // pagination
+        $(document).ready(function () {
+            $('#productTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                lengthChange: true,
+                pageLength: 7,
+            });
+        });
+
+
+        $(document).ready(function () {
+            $('.btn-primary.btn-sm.ml-2').on('click', function () {
+                const productId = $(this).data('id');
+
+                // Make an AJAX request to fetch the product details from the backend
+                $.ajax({
+                    url: `/admin/editProduct/${productId}`,
+                    method: 'GET',
+                    success: function (productData) {
+                        // Populate the modal fields with the product details
+                        console.log(productData)
+                        $('#editProductId').val(productData._id);
+                        $('#editProductName').val(productData.productName);
+                        $('#editBrand').val(productData.brand);
+                        $('#editCategory').val(productData.category);
+                        $('#editDescription').val(productData.description);
+                        $('#editRegularPrice').val(productData.regularPrice);
+                        $('#editSalePrice').val(productData.salePrice);
+                        $('#editQuantity').val(productData.quantity);
+                        $('#editColor').val(productData.color);
+                        $('#editBrakeStyle').val(productData.brakeStyle);
+                        $('#editNumberOfGears').val(productData.numberOfGears);
+
+                        // Load images
+                        $('#editImage1Preview').attr('src', `/uploads/resized/${productData.image1}`);
+                        $('#editImage2Preview').attr('src', `/uploads/resized/${productData.image2}`);
+                        $('#editImage3Preview').attr('src', `/uploads/resized/${productData.image3}`);
+                        $('#editImage4Preview').attr('src', `/uploads/resized/${productData.image4}`);
+
+                        // Show the modal
+                        $('#editProductModal').modal('show');
+                    },
+                    error: function (err) {
+                        console.error('Error fetching product details:', err);
+                        alert('Failed to load product details.');
+                    }
+                });
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>

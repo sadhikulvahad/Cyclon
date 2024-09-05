@@ -1,0 +1,80 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.signup-box {
+    width: 500px; /* Decreased width for a smaller box */
+    padding: 10px; 
+    background-color: #ffffff;
+    border: 2px solid #ced4da;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+h2 {
+    font-family: 'Arial', sans-serif;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center; 
+}
+
+.form-label {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #495057;
+    text-align: left; /* Align labels to the left */
+    display: block; /* Ensure labels take full width */
+}
+
+.form-control {
+    background-color: #f5e6d6;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    height: 35px;
+}
+
+.btn-primary {
+    background-color: #3b4b45;
+    border: none;
+    height: 35px;
+    width: 50%; /* Decreased width for the button */
+}
+
+.btn-light {
+    background-color: #f5e6d6;
+    border-color: #ced4da;
+}
+
+.btn-light img {
+    margin-right: 8px;
+}
+
+.text-center p {
+    margin: 8px 0;
+}
+
+.form-text-left {
+    text-align: left;
+}
+
+.form-text-right {
+    text-align: right;
+}
+
+.form-text-center {
+    text-align: center;
+}
+
+.logo {
+    max-width: 150%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.error-message{
+    color: red;
+    font-size: 0.75rem;
+    display: none;
+}
