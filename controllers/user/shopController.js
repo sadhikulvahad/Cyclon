@@ -7,10 +7,10 @@ const User = require('../../models/userSchema')
 const getProduct = async (req, res) => {
     try {
         const user = req.session.user
+
         if (user) {
             const userData = await User.findOne({ _id: user })
 
-            const products = await Product.find()
             const brand = await Category.find({ categoryType: "brand", isListed: true })
             const category = await Category.find({ categoryType: "type", isListed: true })
 
@@ -18,14 +18,25 @@ const getProduct = async (req, res) => {
             let search = req.query.search || ""
             let page = parseInt(req.query.page) || 1
             const limit = 6
+
+            let sortOption = req.query.sort || 'default';
+
+            let sortCriteria = {};
+            if (sortOption === 'priceLowToHigh') {
+                sortCriteria = { salePrice: 1 };
+            } else if (sortOption === 'priceHighToLow') {
+                sortCriteria = { salePrice: -1 };
+            }
+
             const productData = await Product.find({
                 isBlocked: false,
                 $or: [
                     { productName: { $regex: ".*" + search + ".*", $options: 'i' } },
                 ]
             })
+                .sort(sortCriteria)
                 .limit(limit)
-                .skip(((page - 1) * limit))
+                .skip((page - 1) * limit)
                 .exec()
 
             const count = await Product.find({
@@ -34,6 +45,7 @@ const getProduct = async (req, res) => {
                     { productName: { $regex: ".*" + search + ".*", $options: 'i' } },
                 ],
             }).countDocuments()
+
             const totalPages = Math.ceil(count / limit)
 
 
@@ -55,12 +67,24 @@ const getProduct = async (req, res) => {
             let search = req.query.search || ""
             let page = parseInt(req.query.page) || 1
             const limit = 6
+
+            let sortOption = req.query.sort || 'default';
+
+            let sortCriteria = {};
+            if (sortOption === 'priceLowToHigh') {
+                sortCriteria = { salePrice: 1 };
+            } else if (sortOption === 'priceHighToLow') {
+                sortCriteria = { salePrice: -1 };
+            }
+
+
             const productData = await Product.find({
                 isBlocked: false,
                 $or: [
                     { productName: { $regex: ".*" + search + ".*", $options: 'i' } },
                 ]
             })
+                .sort(sortCriteria)
                 .limit(limit)
                 .skip(((page - 1) * limit))
                 .exec()
@@ -80,6 +104,7 @@ const getProduct = async (req, res) => {
                 currentPage: page,
                 totalPages,
                 search,
+                sortOption,
                 pages: [...Array(totalPages).keys()].map(i => i + 1),
             })
         }

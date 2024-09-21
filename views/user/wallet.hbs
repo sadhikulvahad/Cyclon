@@ -1,0 +1,83 @@
+
+    <style>
+        .wallet-header {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .wallet-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .balance {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .transactions-table {
+            margin-top: 20px;
+        }
+
+        .transactions-table th {
+            background-color: #f8f9fa;
+        }
+
+        .recent-transactions {
+            margin-top: 20px;
+        }
+    </style>
+
+    {{> user/header}}
+
+    <!-- Wallet Header -->
+    <h2 class="wallet-header">Your Wallet</h2>
+
+    <!-- Wallet Summary -->
+    <div class="container">
+        <div class="wallet-summary">
+            <div>
+                <h4>Current Balance</h4>
+                <p class="balance">${{wallet.balance}}</p>
+            </div>
+            <div>
+                <h4>Total Transactions</h4>
+                <p>{{wallet.totalTransactions}}</p>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <h4 class="recent-transactions">Recent Transactions</h4>
+        <div class="table-responsive transactions-table">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each wallet.transactions}}
+                    <tr>
+                        <td>{{this.date}}</td>
+                        <td>{{this.description}}</td>
+                        <td>${{this.amount}}</td>
+                        <td>{{this.status}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+

@@ -3,7 +3,6 @@ const User = require("../../models/userSchema")
 
 
 const customerInfo = async (req,res)=>{
-    if(req.session.admin){
         try {
             let search =req.query.search || ""
             let page = parseInt(req.query.page) || 1
@@ -40,9 +39,6 @@ const customerInfo = async (req,res)=>{
         } catch (error) {
             res.redirect("/pageNotFound")
         }
-    }else{
-        res.redirect("/admin/login")
-    }
     
 }
 
@@ -51,6 +47,7 @@ const blockCustomer = async (req,res)=>{
     try {
         let id= req.query.id
         await User.updateOne({_id:id},{$set:{isBlocked:true}})
+        req.session.user = false
         res.redirect("/admin/customers")
     } catch (error) {
         res.redirect("/pageNotFound")

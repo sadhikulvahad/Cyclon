@@ -4,12 +4,15 @@ const adminController = require("../controllers/admin/adminController")
 const customerController = require("../controllers/admin/customerController")
 const categoryController = require("../controllers/admin/categoryController")
 const productController = require('../controllers/admin/productController')
-const upload = require('../middleware/multer')
+const orderController = require("../controllers/admin/orderController")
 const {userAuth,adminAuth} = require('../middleware/auth')
 
 
 router.get("/login",adminController.loadLogin)
 router.post("/login",adminController.login)
+
+router.use(adminAuth)
+
 router.get("/addProduct",productController.getProductAdd)
 router.post("/addProduct",productController.addProduct)
 router.post('/addCategory', categoryController.addCategory);
@@ -28,7 +31,12 @@ router.get("/blockProduct",productController.blockProduct)
 router.get("/unblockProduct",productController.unblockProduct) 
 
 router.get('/editProduct/:id',productController.getEditProduct)
-router.post("/editProduct", productController.editProduct);
+router.post("/updateProduct", productController.editProduct);
+
+router.get("/orders",orderController.getOrder)
+router.get("/orderControl/:id",orderController.orderDetails)
+
+router.post("/order-status",orderController.updateOrder)
 
 
 

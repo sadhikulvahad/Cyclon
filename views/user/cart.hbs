@@ -1,0 +1,201 @@
+<style>
+    .cart-item {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #fff;
+        position: relative;
+    }
+
+    .product-image img {
+        width: 120px;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .product-details {
+        flex: 1;
+        margin-left: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .product-details h5 {
+        margin-bottom: 10px;
+    }
+
+    .product-details p {
+        margin: 5px 0;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .quantity-controls button {
+        width: 30px;
+        height: 30px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .quantity-controls input {
+        width: 50px;
+        height: 30px;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .delete-btn,
+    .wishlist-btn {
+        margin-left: 10px;
+    }
+
+    .wishlist-btn {
+        background-color: #ffdf7e;
+        border-color: #ffdf7e;
+    }
+
+    .wishlist-btn:hover {
+        background-color: #ffcf5c;
+        border-color: #ffcf5c;
+    }
+
+    .cart-summary {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-top: 30px;
+    }
+
+    .total-amount {
+        text-align: right;
+        margin-bottom: 15px;
+    }
+
+    .checkout-button {
+        text-align: right;
+    }
+
+    .continue-shopping {
+        margin-top: -90px;
+    }
+</style>
+
+
+{{> user/header}}
+
+<div class="container py-4">
+    <h1 class="mb-4">Your Cart</h1>
+    {{#each cartItems}}
+    <div class="cart-item" data-product-id="{{this.productId._id}}">
+        <div class="product-image">
+            <img src="/uploads/resized/{{this.productId.productImages.[0]}}" alt="Product Image">
+        </div>
+        <div class="product-details">
+            <div>
+                <h5>{{this.productId.productName}}</h5>
+                <p>{{this.productId.description}}</p>
+                {{#if this.productId.quantity}}
+                <p style="color: green;">In stock</p>
+                {{else}}
+                <p style="color: red;">Out of Stock</p>
+                {{/if}}
+                <p><span class="fw-semibold">Price:</span><strong>₹{{this.price}}</strong></p>
+                <p class="text-mute">Free Delivery Mon, <b>12 sep</b></p>
+                <div class="quantity-controls">
+                    <p class="fw-semibold">Quantity:</p>
+                    <button class="btn btn-outline-secondary">-</button>
+                    <input type="text" value="{{this.quantity}}" readonly>
+                    <button class="btn btn-outline-secondary">+</button>
+                </div>
+                {{#if this.productId.isBlocked}}
+                <p style="color: red;">Product Unavailable</p>
+                {{else}}
+                <p></p>
+                {{/if}}
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-warning wishlist-btn">Add to Wishlist</button>
+                <button class="btn btn-danger delete-btn">Remove item</button>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+
+    <!-- Cart Summary with total price and checkout button -->
+    <div class="cart-summary">
+        <div class="total-amount">
+            <h4>Total Amount: ₹{{userCart.totalPrice}}</h4>
+        </div>
+        <div class="checkout-button">
+            <a href="/checkoutPage" class="btn btn-primary">Proceed to Checkout</a>
+        </div>
+    </div>
+
+    <!-- Continue Shopping Button, stays at the bottom -->
+    <div class="d-flex justify-content-start continue-shopping">
+        <a href="/shop" class="btn btn-secondary">Continue Shopping</a>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+    $(document).on('click', '.quantity-controls button', function () {
+        const action = $(this).text() === '+' ? 'increment' : 'decrement';
+        const productId = $(this).closest('.cart-item').data("product-id");
+
+        console.log("Button clicked");
+        console.log("Product ID:", productId);
+
+        $.ajax({
+            url: '/updateQuantity',
+            method: 'POST',
+            data: { productId, action },
+            success: function (response) {
+                location.reload();
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
+
+    $('.delete-btn').on('click', function () {
+        const productId = $(this).closest('.cart-item').data('product-id');
+
+        $.ajax({
+            url: '/removeItem',
+            method: 'POST',
+            data: { productId },
+            success: function (response) {
+                $(`[data-product-id='${productId}']`).remove();
+
+                const newTotalPrice = response.newTotalPrice;
+                $('.total-amount h4').text(`Total Amount: ₹${newTotalPrice}`);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+
+</script>

@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,24 +39,24 @@
     }
 
     .modal-dialog {
-        max-width: 90vw;
+        max-width: 100vw;
         width: auto;
         margin: 0.5rem auto;
+        overflow-x: auto;
     }
 
     .modal-content {
-        max-height: 80vh;
-        /* Ensures modal content does not overflow */
-        overflow: auto;
+        max-height: 180vh;
+        overflow-y: auto;
+        border-radius: 8px;
+        padding: 20px;
     }
 
     .image-cropper {
         max-height: 80vh;
-        /* Adjust based on your needs */
         width: 100%;
         object-fit: contain;
     }
-
 
     .modal-body {
         padding: 0;
@@ -83,13 +80,21 @@
     .form-control,
     .form-select {
         max-width: 100%;
-        /* Ensure inputs don't overflow */
     }
 
     .modal-body-edit {
         width: 100%;
         height: auto;
         box-sizing: border-box;
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
     }
 </style>
 
@@ -150,13 +155,27 @@
 
         <!-- Add New Product Section -->
         <div class="main-content p-4">
-            <h2 class="mb-3">Add New Product</h2>
-            <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <form method="POST" action="/admin/addProduct" enctype="multipart/form-data"
-                                onsubmit="return validateForm()">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">Add New Product</button>
+
+            <!--Add New Product Modal -->
+            <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
+                aria-hidden="true">
+
+
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div id="error-message" style="color: red; display: none;"></div>
+                        <div class="modal-body">
+                            <form id="addProductForm" enctype="multipart/form-data" onsubmit="return validateForm()">
+                                <!-- Your form fields here -->
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group mb-4">
@@ -170,6 +189,7 @@
                                         <div class="form-group mb-4">
                                             <label class="form-label">Brand</label>
                                             <select class="form-select border" name="brand">
+                                                <option value="" disabled selected hidden>select</option>
                                                 {{#each brand}}
                                                 <option value="{{name}}">{{name}}</option>
                                                 {{/each}}
@@ -180,6 +200,7 @@
                                         <div class="form-group mb-4">
                                             <label class="form-label">Category</label>
                                             <select class="form-select border" name="category">
+                                                <option value="" disabled selected hidden>select</option>
                                                 {{#each category}}
                                                 <option value="{{name}}">{{name}}</option>
                                                 {{/each}}
@@ -230,6 +251,7 @@
                                         <div class="form-group mb-4">
                                             <label class="form-label">Color</label>
                                             <select class="form-select border" name="color">
+                                                <option value="" disabled selected hidden>select</option>
                                                 <option value="Red">Red</option>
                                                 <option value="Grey">Grey</option>
                                                 <option value="White">White</option>
@@ -246,6 +268,7 @@
                                         <div class="form-group mb-4">
                                             <label class="form-label">Brake Style</label>
                                             <select class="form-select border" name="brakeStyle">
+                                                <option value="" disabled selected hidden>select</option>
                                                 <option value="Disc">Disc</option>
                                                 <option value="Coaster">Coaster</option>
                                                 <option value="Linear Pull">Linear Pull</option>
@@ -257,6 +280,7 @@
                                         <div class="form-group mb-4">
                                             <label class="form-label">Number of Gears</label>
                                             <select class="form-select border" name="numberOfGears">
+                                                <option value="" disabled selected hidden>select</option>
                                                 <option value="3">3</option>
                                                 <option value="5">5</option>
                                                 <option value="7">7</option>
@@ -275,9 +299,9 @@
                                             <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
                                                 id="previewImage1" class="img-fluid"
                                                 style="max-width: 200px; max-height: 200px; display: none;">
-                                            <input class="form-control border" type="file" name="image1" id="input1"
+                                            <input class="form-control border" type="file" name="image1" id="cropped1"
                                                 accept="image/png, image/jpeg, image/jpg"
-                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal1', 'croppedImageInput1', 'cropBtn1', 'previewImage1')">
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal1', 'cropped1', 'cropBtn1', 'previewImage1')">
                                             <div id="image1-error" class="error-message"></div>
                                         </div>
                                     </div>
@@ -287,9 +311,9 @@
                                             <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
                                                 id="previewImage2" class="img-fluid"
                                                 style="max-width: 200px; max-height: 200px; display: none;">
-                                            <input class="form-control border" type="file" name="image2" id="input2"
+                                            <input class="form-control border" type="file" name="image2" id="cropped2"
                                                 accept="image/png, image/jpeg, image/jpg"
-                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal2', 'croppedImageInput2', 'cropBtn2', 'previewImage2')">
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal2', 'cropped2', 'cropBtn2', 'previewImage2')">
                                             <div id="image2-error" class="error-message"></div>
                                         </div>
                                     </div>
@@ -302,9 +326,9 @@
                                             <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
                                                 id="previewImage3" class="img-fluid"
                                                 style="max-width: 200px; max-height: 200px; display: none;">
-                                            <input class="form-control border" type="file" name="image3" id="input3"
+                                            <input class="form-control border" type="file" name="image3" id="cropped3"
                                                 accept="image/png, image/jpeg, image/jpg"
-                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal3', 'croppedImageInput3', 'cropBtn3', 'previewImage3')">
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal3', 'cropped3', 'cropBtn3', 'previewImage3')">
                                             <div id="image3-error" class="error-message"></div>
                                         </div>
                                     </div>
@@ -314,15 +338,19 @@
                                             <img src="/uploads/resized/{{imageName}}" alt="Image Preview"
                                                 id="previewImage4" class="img-fluid"
                                                 style="max-width: 200px; max-height: 200px; display: none;">
-                                            <input class="form-control border" type="file" name="image4" id="input4"
+                                            <input class="form-control border" type="file" name="image4" id="cropped4"
                                                 accept="image/png, image/jpeg, image/jpg"
-                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal4', 'croppedImageInput4', 'cropBtn4', 'previewImage4')">
+                                                onchange="viewImageAndOpenCropperModal(event, 'cropModal4', 'cropped4', 'cropBtn4', 'previewImage4')">
                                             <div id="image4-error" class="error-message"></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button class="btn btn-primary w-100" type="submit">Submit</button>
+                                <!-- Form Submit Button -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -330,7 +358,6 @@
             </div>
         </div>
 
-        <!-- Modals for Image Cropping -->
         <!-- Modal 1 -->
         <div class="modal fade" id="cropModal1" tabindex="-1" aria-labelledby="cropModal1Label" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -432,8 +459,10 @@
                     </button>
                 </div>
                 <div class="modal-body-edit">
-                    <form id="editProductForm" method="POST" action="/admin/updateProduct"
-                        enctype="multipart/form-data">
+                    <form id="editProductForm" enctype="multipart/form-data">
+
+                        <div id="edit-error-message" style="color: red;"></div>
+
                         <input type="hidden" id="editProductId" name="productId">
                         <div class="row">
                             <div class="col-md-6">
@@ -610,38 +639,37 @@
                     autoCropArea: 1,
                 });
 
-
-                const cropBtn = document.getElementById(cropBtnId)
+                const cropBtn = document.getElementById(cropBtnId);
 
                 cropBtn.removeEventListener('click', cropAndCloseModal);
 
                 function cropAndCloseModal() {
                     const canvas = cropper.getCroppedCanvas({
-                        width: 800,
-                        height: 800,
+                        width: 600,
+                        height: 600,
                     });
 
                     canvas.toBlob(function (blob) {
                         const croppedImageUrl = URL.createObjectURL(blob);
-                        console.log(croppedImageUrl)
                         const previewImage = document.getElementById(previewImageId);
-                        console.log(previewImage)
                         previewImage.src = croppedImageUrl;
-                        console.log(previewImage.src)
                         previewImage.style.display = 'block';
 
-                        const croppedImageInput = document.getElementById(croppedImageInputId);
-                        const fileList = new DataTransfer();
-                        console.log(fileList)
-                        fileList.items.add(new File([blob], file.name));
-                        croppedImageInput.files = new File([blob], file.name);
-
-                        URL.revokeObjectURL(croppedImageUrl);
-                    });
+                        const croppedFile = new File([blob], file.name, { type: file.type });
+                        const dt = new DataTransfer();
+                        dt.items.add(croppedFile);
+                        document.getElementById(croppedImageInputId).files = dt.files;
+                        console.log(document.getElementById(croppedImageInputId).files)
+                        // Revoke the object URL after a short delay to ensure it's loaded
+                        setTimeout(() => {
+                            URL.revokeObjectURL(croppedImageUrl);
+                        }, 1000);
+                    }, file.type);
 
                     cropper.destroy();
                     modal.hide();
                 }
+
                 cropBtn.addEventListener('click', cropAndCloseModal, { once: true });
             };
 
@@ -683,10 +711,69 @@
             return isValid;
         }
 
+        $(document).ready(function () {
+            $('#addProductForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/admin/addProduct',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Product added successfully!');
+                            $('#addProductModal').modal('hide');
+                            window.location.reload();  // Refresh the page or update the product list
+                        } else {
+                            $('#error-message').text(response.error).show();  // Show error in the modal
+                        }
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An unknown error occurred.';
+                        $('#error-message').text(errorMessage).show();  // Show error in the modal
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function () {
+            $('#editProductForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+                var formObject = {};
+
+                // Convert FormData to a simple object
+                formData.forEach(function (value, key) {
+                    formObject[key] = value;
+                });
+                $.ajax({
+                    url: '/admin/updateProduct',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formObject),
+                    processData: false,
+                    success: function (response) {
+                        alert('Product updated successfully!');
+                        $('#editProductModal').modal('hide');
+                        window.location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An unknown error occurred';
+                        $('#edit-error-message').text(errorMessage || 'An error occurred. Please try again.');
+                    }
+                });
+            });
+        });
+
         // Attach validateForm function to form submission
         document.querySelector('form').addEventListener('submit', function (event) {
             if (!validateForm()) {
-                event.preventDefault(); // Prevent form submission if validation fails
+                event.preventDefault();
             }
         });
 
@@ -697,13 +784,13 @@
                 searching: true,
                 ordering: true,
                 lengthChange: true,
-                pageLength: 7,
+                pageLength: 10,
             });
         });
 
 
         $(document).ready(function () {
-            $('.btn-primary.btn-sm.ml-2').on('click', function () {
+            $('#productTable').on('click', '.btn-primary.btn-sm.ml-2', function () {
                 const productId = $(this).data('id');
 
                 // Make an AJAX request to fetch the product details from the backend
@@ -711,8 +798,8 @@
                     url: `/admin/editProduct/${productId}`,
                     method: 'GET',
                     success: function (productData) {
-                        // Populate the modal fields with the product details
                         console.log(productData)
+                        // Populate the modal fields with the product details
                         $('#editProductId').val(productData._id);
                         $('#editProductName').val(productData.productName);
                         $('#editBrand').val(productData.brand);
@@ -726,10 +813,10 @@
                         $('#editNumberOfGears').val(productData.numberOfGears);
 
                         // Load images
-                        $('#editImage1Preview').attr('src', `/uploads/resized/${productData.image1}`);
-                        $('#editImage2Preview').attr('src', `/uploads/resized/${productData.image2}`);
-                        $('#editImage3Preview').attr('src', `/uploads/resized/${productData.image3}`);
-                        $('#editImage4Preview').attr('src', `/uploads/resized/${productData.image4}`);
+                        $('#editImage1Preview').attr('src', `/uploads/resized/${productData.productImages[0]}`);
+                        $('#editImage2Preview').attr('src', `/uploads/resized/${productData.productImages[1]}`);
+                        $('#editImage3Preview').attr('src', `/uploads/resized/${productData.productImages[2]}`);
+                        $('#editImage4Preview').attr('src', `/uploads/resized/${productData.productImages[3]}`);
 
                         // Show the modal
                         $('#editProductModal').modal('show');

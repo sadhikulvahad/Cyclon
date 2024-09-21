@@ -36,11 +36,7 @@ const login = async (req, res) => {
 
 const loadDashboard = async (req,res)=>{
     try {
-        if (!req.session.admin) {
-            return res.redirect("/admin/login")
-        } else {
-            res.render("admin/dashboard")
-        }
+        res.render("admin/dashboard")
     } catch (error) {
         console.log(error)
         res.redirect("/admin/login")

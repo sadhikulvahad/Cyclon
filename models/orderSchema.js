@@ -8,6 +8,11 @@ const orderSchema = new Schema({
         default:()=>uuidv4(),
         unique: true
     },
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     orderdItems:[{
         product:{
             type:Schema.Types.ObjectId,
@@ -20,33 +25,38 @@ const orderSchema = new Schema({
         },
         price:{
             type:Number,
+            required:true,
             default: 0
         }
     }],
     totalPrice:{
-        tupe:Number,
+        type:Number,
         required:true
     },
     discount:{
         type:Number,
         default:0
     },
-    finallyAmount:{
-        type:Number,
-        required:true
-    },
     address:{
         type:Schema.Types.ObjectId,
-        ref:"User",
+        ref:"Address",
         required: true
     },
     invoiceDate:{
         type:Date
     },
+    items:{
+        type:String,
+    },
+    paymentMethod: {
+        type: String,
+        required: true,
+        enum: ['cod', 'razorpay'], 
+    },
     status:{
         type: String,
         required: true,
-        enum:["pending", 'Processing', "Shipped", "Deliverd", "Cancelled", "Return Request", "Returned"]
+        enum:["pending", "shipped", "deliverd", "cancelled", "return request", "returned"]
     },
     createdOn:{
         type:Date,

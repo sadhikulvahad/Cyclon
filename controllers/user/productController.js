@@ -6,12 +6,11 @@ const User = require('../../models/userSchema')
 const getProduct = async (req, res) => {
     try {
         const user = req.session.user
+        const productId = req.params.id
         if (user) {
             const userData = await User.findOne({ _id: user })
 
-            const productId = req.params.id
-
-            const products = await Product.find({
+            const products = await Product.findOne({
                 _id:productId,
                 isBlocked: false,
             })
@@ -24,8 +23,6 @@ const getProduct = async (req, res) => {
                 related
             })
         } else {
-            const productId = req.params.id
-            console.log(productId)
             const products = await Product.findOne({
                 _id:productId,
                 isBlocked: false,

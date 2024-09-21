@@ -1,0 +1,105 @@
+<style>
+   h3 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.total{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.order-box {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 1200px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #fff;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.product-image {
+    width: 30%;
+    max-width: 250px;
+}
+
+.product-image img {
+    width: 80%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.product-details {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.product-details h5 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.product-details p {
+    font-size: 1rem;
+    margin: 5px 0;
+}
+
+.item-row hr {
+    width: 100%;
+    margin-top: 10px;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+</style>
+
+
+
+{{> user/header}}
+
+<h3>Your Orders</h3>
+
+<div class="container-fluid total">
+    {{#each orders}}
+    <div class="order-box">
+        {{#each orderdItems}}
+        <div class="item-row">
+            <!-- Product Image -->
+            <div class="product-image">
+                <img src="/uploads/resized/{{this.product.productImages.[0]}}" alt="Product Image">
+            </div>
+
+            <!-- Product Details -->
+            <div class="product-details">
+                <h5>{{this.product.productName}}</h5>
+                <p><strong>Order ID:</strong> {{../orderId}}</p>
+                <p><strong>Price:</strong> ${{this.price}}</p>
+                <p><strong>Quantity:</strong> {{this.quantity}}</p>
+                <p><strong>Status:</strong> {{../status}}</p>
+                <a href="/orderDetails/{{../orderId}}">View Details</a>
+            </div>
+        </div>
+        <hr>
+        {{/each}}
+    </div>
+    {{/each}}
+</div>
+

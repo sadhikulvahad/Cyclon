@@ -13,7 +13,7 @@ const userSchema = new Schema({
         unique: true
     },
     phone: {
-        type: String,
+        type: Number,
         required: false,
         unique: false,
         sparse:true,
@@ -56,6 +56,10 @@ const userSchema = new Schema({
     },
     redeemed:{
         type:Boolean
+    },
+    userProfilePhoto:{
+        type: String,
+        required: false
     },
     redeemedUsers:[{
         type:Schema.Types.ObjectId,

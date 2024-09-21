@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/OTP.css">
+</head>
+
+<body>
+    <div class="logo-container">
+        <a href="#">
+            <img src="/images/Logo.png" alt="Logo" class="logo">
+        </a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title text-center">Enter Your OTP</h5>
+            <div id="timer" class="text-center mb-3">
+                Time remaining: <span id="time">01:00</span>
+            </div>
+            <form class="otp-input d-flex justify-content-center" id="otpForm" action="/verifyForgot" method="post"
+                onsubmit="return validateOTPForm()">
+                <input type="text" id="otp1" name="otp" class="form-control" required maxlength="1" pattern="\d*">
+                <input type="text" id="otp2" name="otp" class="form-control" required maxlength="1" pattern="\d*">
+                <input type="text" id="otp3" name="otp" class="form-control" required maxlength="1" pattern="\d*">
+                <input type="text" id="otp4" name="otp" class="form-control" required maxlength="1" pattern="\d*">
+                <button class="btn btn-primary" type="submit">Submit</button>
+            </form>
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-link" id="resendOtpBtn" type="button" onclick="resendOTP()">Resend OTP</button>
+
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/javascripts/otp.js"></script>
+    <script>
+        function validateOTPForm() {
+            const otpInput1 = document.getElementById("otp1").value.trim()
+            const otpInput2 = document.getElementById("otp2").value.trim()
+            const otpInput3 = document.getElementById("otp3").value.trim()
+            const otpInput4 = document.getElementById("otp4").value.trim()
+
+            const otp = otpInput1 + otpInput2 + otpInput3 + otpInput4
+
+            if (otp.length !== 4 || isNaN(otp)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid OTP",
+                    text: "Please enter a valid OTP"
+                });
+                return false;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/verifyForgot",
+                data: { otp: otp },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "OTP Verified Successfully",
+                            showConfirmButton: false,
+                            timer: 1500,
+                        }).then(() => {
+                            window.location.href = response.redirectUrl
+                        })
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: response.message
+                        })
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid OTP",
+                        text: "Please try again"
+                    })
+                }
+            })
+            return false
+        }
+
+
+        function resendOTP() {
+            $.ajax({
+                url: '/forgotPass',
+                type: 'POST',
+                data: {
+                    email: '{{email}}' // Include email for resending OTP
+                },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'OTP Resent',
+                            text: 'A new OTP has been sent to your email.'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while resending the OTP. Please try again.'
+                    });
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>

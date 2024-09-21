@@ -14,13 +14,72 @@
             font-size: 0.8rem;
             color: #141313;
         }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .sidebar-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .sidebar-list li {
+            padding: 5px 0;
+        }
+
+        .sidebar {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+        }
+
+        .rating i {
+            color: gold;
+            margin-right: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-image {
+            margin-right: 15px;
+            width: 200px;
+            height: 200px;
+        }
+
+        .product-details {
+            flex-grow: 1;
+        }
+
+        .product-rating i {
+            color: gold;
+        }
     </style>
 
 </head>
 
 <body>
     {{> user/header}}
-    <nav aria-label="breadcrumb ">
+    <nav aria-label="breadcrumb">
         <ol class="breadcrumb ml-5">
             <li class="breadcrumb-item"><a href="/">Home</a></li>
             <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
@@ -28,23 +87,25 @@
         </ol>
     </nav>
 
-
     <div class="container mt-4">
         <div class="row">
+            <!-- Sidebar Section -->
             <div class="col-md-3">
                 <div class="sidebar">
-                    <h3 class="sidebar-title">Category</h3>
+                    <h3 class="sidebar-title">Types</h3>
                     <ul class="sidebar-list">
                         {{#each category}}
-                        <li><a href="#">{{name}}</a></li>
+                        <li><a href="#" class="type-filter" data-brand="{{name}}">{{name}}</a></li>
                         {{/each}}
                     </ul>
+
                     <h3 class="sidebar-title">Brands</h3>
                     <ul class="sidebar-list">
                         {{#each brand}}
-                        <li><a href="#">{{name}}</a></li>
+                        <li><a href="#" class="brand-filter" data-brand="{{name}}">{{name}}</a></li>
                         {{/each}}
                     </ul>
+
                     <h3 class="sidebar-title">Customer Review</h3>
                     <div class="rating">
                         <i class="fas fa-star"></i>
@@ -54,62 +115,96 @@
                         <i class="fas fa-star-half-alt"></i>
                         &up
                     </div>
-                    <h3 class="sidebar-title">Price</h3>
-                    <input type="range" min="5000" max="150000" value="0">
-                    <h3 class="sidebar-title">Number of Gears</h3>
-                    <div class="col-md-6">
-                        <div class="form-group mb-4">
-                            <select class="form-select border" name="numberOfGears">
-                                <option value="3">3</option>
-                                <option value="5">5</option>
-                                <option value="7">7</option>
-                                <option value="9">9</option>
-                            </select>
-                            <div id="numberOfGears-error" class="error-message"></div>
-                        </div>
+
+                    <h3 class="sidebar-title">Price Range</h3>
+                    <div>
+                        <label><input type="checkbox" value="0-5000" class="price-filter"> ₹0 - ₹5,000</label><br>
+                        <label><input type="checkbox" value="5000-10000" class="price-filter"> ₹5,000 -
+                            ₹10,000</label><br>
+                        <label><input type="checkbox" value="10000-15000" class="price-filter"> ₹10,000 -
+                            ₹15,000</label><br>
+                        <label><input type="checkbox" value="15000+" class="price-filter"> ₹15,000+</label>
                     </div>
+
+                    <h3 class="sidebar-title">Number of Gears</h3>
+                    <div class="form-group">
+                        <select class="form-select border form-control" name="numberOfGears">
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                            <option value="7">7</option>
+                            <option value="9">9</option>
+                        </select>
+                    </div>
+
                     <h3 class="sidebar-title">Brake Style</h3>
-                    <div class="form-group mb-4">
-                        <select class="form-select border" name="brakeStyle">
+                    <div class="form-group">
+                        <select class="form-select border form-control" name="brakeStyle">
                             <option value="Disc">Disc</option>
                             <option value="Coaster">Coaster</option>
                             <option value="Linear Pull">Linear Pull</option>
                         </select>
-                        <div id="brakeStyle-error" class="error-message"></div>
                     </div>
+                    <button id="filterBtn" class="btn btn-primary">Apply Filters</button>
                 </div>
             </div>
+
+            <!-- Main Content Section -->
             <div class="col-md-9">
-                <div class="row">
-                    {{#each products}}
-                    <div class="col-md-12 mb-4">
-                        <a href="/product/{{_id}}" class="text-decoration-none">
-                            <div class="product-card d-flex">
-                                <img src="/uploads/resized/{{productImages.[0]}}" class="product-image"
-                                    alt="{{productName}} style=" max-width: 200px; height: auto;""
-                                    style="max-width: 200px;">
-                                <div class="product-details ">
-                                    <h4 class="product-title"><b>{{productName}}</b></h4>
-                                    <p class="text-muted">{{description}}</p>
-                                    <div class="product-rating">
-                                        {{#each product.rating}}
-                                        <i class="fas fa-star"></i>
-                                        {{/each}}
-                                    </div>
-                                    <span class="product-price">₹{{salePrice}}</span>
-                                    <span class="text-mute"> <del>M.R.P: ₹{{regularPrice}}</del></span>
-                                    <p class="text-mute">Free Delivery Mon, <b>12 sep</b></p>
-                                </div>
-                            </div>
-                        </a>
+                <!-- Sort dropdown -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label for="sortProducts">Sort by:</label>
+                        <select id="sortProducts" class="form-control">
+                            <option value="default">Default</option>
+                            <option value="priceLowToHigh" {{#if (eq sortOption "priceLowToHigh" )}}selected{{/if}}>
+                                Price: Low to High</option>
+                            <option value="priceHighToLow" {{#if (eq sortOption "priceHighToLow" )}}selected{{/if}}>
+                                Price: High to Low</option>
+                        </select>
                     </div>
-                    {{/each}}
                 </div>
+
+                <!-- Product Cards Section -->
+                <div class="products-container">
+                    <div class="row">
+                        {{#each products}}
+                        <div class="col-md-12 mb-4">
+                            <a href="/product/{{_id}}" class="text-decoration-none">
+                                <div class="product-card d-flex">
+                                    <img src="/uploads/resized/{{productImages.[0]}}" class="product-image"
+                                        alt="{{productName}}"
+                                        style="max-width: 250px; height: auto; margin-right: 20px;">
+                                    <div class="product-details">
+                                        <h4 class="product-title"><b>{{productName}}</b></h4>
+                                        <p class="text-muted">{{description}}</p>
+                                        <div class="product-rating">
+                                            {{#each product.rating}}
+                                            <i class="fas fa-star"></i>
+                                            {{/each}}
+                                        </div>
+                                        <span class="product-price">₹{{salePrice}}</span>
+                                        <span class="text-mute"> <del>M.R.P: ₹{{regularPrice}}</del></span>
+                                        <p class="text-mute">Free Delivery Mon, <b>12 Sep</b></p>
+                                        {{#if quantity}}
+                                        <p style="color: green;">In stock</p>
+                                        {{else}}
+                                        <p style="color: red;">Out of Stock</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Pagination -->
                 <nav aria-label="Page navigation example">
                     <ul class="pagination justify-content-center">
                         {{#each pages}}
                         <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
-                            <a class="page-link" href="?page={{this}}&search={{search}}">{{this}}</a>
+                            <a class="page-link"
+                                href="?page={{this}}&search={{search}}&sort={{../sortOption}}">{{this}}</a>
                         </li>
                         {{/each}}
                     </ul>
@@ -117,11 +212,22 @@
             </div>
         </div>
     </div>
+
     <!-- Footer Section -->
-    {{> user/footer }}
+    {{> user/footer}}
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.getElementById("sortProducts").addEventListener("change", function () {
+            const selectedOption = this.value;
+            const searchQuery = "{{search}}";
+            const page = "{{currentPage}}";
+            window.location.href = `/shop?search=${searchQuery}&sort=${selectedOption}&page=${page}`;
+        });
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,544 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    .profile-section {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .profile-pic {
+        max-width: 200px;
+        margin-right: 30px;
+    }
+
+    .form-section {
+        flex-grow: 1;
+    }
+
+    .address-section {
+        margin-top: 20px;
+    }
+
+    .address-card {
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 0px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        width: fit-content;
+        height: fit-content;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .address-card h4,
+    .address-card p {
+        margin: 0;
+        padding: 0;
+    }
+
+    .button-group {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .address-card-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .profile-pic {
+        width: 100px;
+        height: 100px;
+    }
+</style>
+
+<body>
+    {{> user/header}}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h5 class="card-title">User Profile</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-section">
+                            <!-- Profile Picture Section -->
+                            <div class="text-center" style="width:110px ">
+                                {{#if userData.profilePic}}
+                                <img src="{{userData.profilePic}}" alt="Profile Picture"
+                                    class="img-fluid img-thumbnail w-25">
+                                {{else}}
+                                <img src="/images/userProfile.jpg" alt="User Profile" class="img-fluid img-thumbnail"
+                                    style="width: 100%;">
+                                {{/if}}
+                                <h5 class="mt-3">{{userData.name}}</h5>
+                            </div>
+
+                            <!-- User Details Form -->
+                            <div class="form-section" style="margin-left: 50px;">
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="fullName" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="fullName" value="{{userData.name}}"
+                                            disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                                        {{#if userData.phone}}
+                                        <input type="tel" class="form-control" id="phoneNumber"
+                                            value="{{userData.phone}}" disabled>
+                                        {{else}}
+                                        <input type="tel" class="form-control" id="phoneNumber"
+                                            value="Update your profile" disabled>
+                                        {{/if}}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" value="{{userData.email}}"
+                                            disabled>
+                                    </div>
+                                </form>
+                                <div class="button-group">
+                                    <a href="/changePassword" id="changePasswordBtn"
+                                        style="text-decoration: none; color:black">Change Password</a>
+                                    <button class="btn btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#updateProfileModal">Update Profile</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Section -->
+                        <h4>Addresses</h4>
+                        <div class=" row">
+                            {{#if address.address.length}}
+                            {{#each address.address}}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="address-card">
+                                    <div class="address-card-content">
+                                        <h6>{{firstName}} {{lastName}}</h6>
+                                        <p><strong>House No: </strong>{{houseNo}}</p>
+                                        <p><strong>Area: </strong>{{area}}</p>
+                                        <p><strong>Landmark: </strong>{{landmark}}</p>
+                                        <p><strong>Phone No: </strong>{{phone}}</p>
+                                        <p><strong>State: </strong>{{state}}</p>
+                                        <p><strong>Pin Code: </strong>{{pincode}}</p>
+                                        <div class="address-actions">
+                                            <button type="button" class="btn btn-outline-primary btn-sm editAddressBtn"
+                                                data-bs-toggle="modal" data-bs-target="#editAddressModal"
+                                                data-addressid="{{_id}}" data-firstname="{{firstName}}"
+                                                data-lastname="{{lastName}}" data-phone="{{phone}}"
+                                                data-houseno="{{houseNo}}" data-area="{{area}}"
+                                                data-landmark="{{landmark}}" data-state="{{state}}"
+                                                data-pincode="{{pincode}}">
+                                                Edit Address
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm deleteAddressBtn"
+                                                data-id="{{_id}}">Delete
+                                                Address</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{/each}}
+                            {{else}}
+                            <p>No addresses available.</p>
+                            {{/if}}
+                        </div>
+                        <button class="btn btn-secondary mt-3" id="newAddressBtn" data-bs-toggle="modal"
+                            data-bs-target="#addAddressModal">Add New Address</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding new address -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="newAddressModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newAddressModalLabel">Add New Address</h5>
+                    {{#if error}}
+                    <div class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {{/if}}
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newAddressForm">
+                        <div class="row">
+                            <input type="hidden" id="userId" value="{{userData._id}}">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="mobileNumber" class="form-label">Mobile Number</label>
+                                <input type="tel" class="form-control" id="mobileNumber" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="houseNo" class="form-label">House No/Flat No</label>
+                                <input type="text" class="form-control" id="houseNo" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="area" class="form-label">Area</label>
+                                <input type="text" class="form-control" id="area" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="landmark" class="form-label">Landmark</label>
+                                <input type="text" class="form-control" id="landmark">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="pinCode" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pinCode" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveAddressBtn">Save Address</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for updating profile -->
+    <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateProfileModalLabel">Update Profile</h5>
+                    {{#if error}}
+                    <div class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {{/if}}
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateProfileForm">
+                        <div class="mb-3">
+                            <input type="hidden" id="userId" value="{{userData._id}}">
+                            <label for="updateFullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="updateFullName" value="{{userData.name}}"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="updatePhoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="updatePhoneNumber" value="{{userData.phone}}"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="updateEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="updateEmail" value="{{userData.email}}"
+                                required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal for updating address -->
+    <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+                    {{#if error}}
+                    <div class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {{/if}}
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAddressForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <input type="hidden" id="editAddressId">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="editFirstName" required value="">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="editLastName">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="mobileNumber" class="form-label">Mobile Number</label>
+                                <input type="tel" class="form-control" id="editMobileNumber" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="houseNo" class="form-label">House No/Flat No</label>
+                                <input type="text" class="form-control" id="editHouseNo" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="area" class="form-label">Area</label>
+                                <input type="text" class="form-control" id="editArea" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="landmark" class="form-label">Landmark</label>
+                                <input type="text" class="form-control" id="editLandmark">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="editState" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="pinCode" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="editPinCode" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveEditAddressBtn">Save Address</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+
+    $(document).ready(function () {
+        $('.deleteAddressBtn').on('click', function () {
+            const addressId = $(this).data('id')
+            if (confirm('Are you sure you want to delete this address?')) {
+                $.ajax({
+                    url: `/deleteAddress/${addressId}`,
+                    method: 'DELETE',
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Address deleted successfully')
+                            window.location.reload()
+                        } else {
+                            alert('Error in deleting Address')
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error('AJAX error:', textStatus, errorThrown);
+                        alert('An error occurred while deleting the address');
+                    }
+                })
+            }
+        })
+    })
+
+
+    $(document).ready(function () {
+        $('.editAddressBtn').on('click', function () {
+            const addressId = $(this).data('addressid');
+            const firstName = $(this).data('firstname');
+            const lastName = $(this).data('lastname');
+            const phone = $(this).data('phone');
+            const houseNo = $(this).data('houseno');
+            const area = $(this).data('area');
+            const landmark = $(this).data('landmark');
+            const state = $(this).data('state');
+            const pincode = $(this).data('pincode');
+
+
+
+            $('#editAddressId').val(addressId);
+            $('#editFirstName').val(firstName);
+            $('#editLastName').val(lastName);
+            $('#editMobileNumber').val(phone);
+            $('#editHouseNo').val(houseNo);
+            $('#editArea').val(area);
+            $('#editLandmark').val(landmark);
+            $('#editState').val(state);
+            $('#editPinCode').val(pincode);
+            // Show the modal
+            $('#editAddressModal').modal('show');
+        });
+
+
+
+        $('#saveEditAddressBtn').on('click', function () {
+
+            const addressId = $('#editAddressId').val();
+            if (!addressId) {
+                alert("Address ID is missing. Cannot update the address.");
+                return;
+            }
+            // Prepare the data to be sent
+            const data = {
+                addressId: addressId,
+                firstName: $('#editFirstName').val(),
+                lastName: $('#editLastName').val(),
+                phone: $('#editMobileNumber').val(),
+                houseNo: $('#editHouseNo').val(),
+                area: $('#editArea').val(),
+                landmark: $('#editLandmark').val(),
+                state: $('#editState').val(),
+                pincode: $('#editPinCode').val(),
+            };
+
+            // Send the AJAX request to update the address
+            $.ajax({
+                url: '/updateAddress',
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    if (response.success) {
+                        alert('Address updated successfully');
+                        $('#editAddressModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        alert('Error updating address');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX error:', textStatus, errorThrown, jqXHR.responseText);
+                    alert('An error occurred while updating the address');
+                }
+            });
+        });
+    });
+
+
+
+    $(document).ready(function () {
+        $('#saveAddressBtn').on('click', function () {
+            const firstName = $('#firstName').val();
+            const lastName = $('#lastName').val();
+            const phone = $('#mobileNumber').val();
+            const houseNo = $('#houseNo').val();
+            const area = $('#area').val();
+            const landmark = $('#landmark').val();
+            const state = $('#state').val();
+            const pincode = $('#pinCode').val();
+            const userId = $('#userId').val()
+
+            // Validate required fields
+            if (firstName && lastName && mobileNumber && houseNo && area && state && pinCode) {
+                console.log(firstName)
+                // AJAX request to save the address
+                $.ajax({
+                    url: '/getAddress',
+                    method: 'POST',
+                    data: {
+                        firstName: firstName,
+                        lastName: lastName,
+                        phone: phone,
+                        houseNo: houseNo,
+                        area: area,
+                        landmark: landmark,
+                        state: state,
+                        pincode: pincode,
+                        userId: userId
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Address saved successfully!');
+
+                            $('#addAddressModal').modal('hide');
+
+                            $('#newAddressForm')[0].reset();
+
+                            window.location.reload();
+                        } else {
+                            alert('Error saving the address.');
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            } else {
+                alert('Please fill in all required fields.');
+            }
+        });
+    });
+
+
+    $('#saveProfileBtn').on('click', function () {
+        const name = $('#updateFullName').val();
+        const phone = $('#updatePhoneNumber').val();
+        const email = $('#updateEmail').val();
+        const userId = $('#userId').val();
+
+        if (name && phone && email && userId) {
+            $.ajax({
+                url: '/updateProfile',
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    userId: userId
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        alert('Profile updated successfully');
+                        $('#updateProfileModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        alert("Error updating profile");
+                    }
+                },
+                error: function (error) {
+                    console.error("AJAX error:", error);
+                    alert("An error occurred");
+                }
+            });
+        } else {
+            alert('Please fill all the fields');
+        }
+    });
+
+
+
+</script>

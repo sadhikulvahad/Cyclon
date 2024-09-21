@@ -102,6 +102,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
+                            <div id="addErrorMessage" class="alert alert-danger d-none"></div>
                             <form id="addForm">
                                 <div class="form-group">
                                     <label for="newItemName">Item Name</label>
@@ -112,7 +113,8 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="$('#addModal').modal('hide');">Close</button>
+                            <button type="button" class="btn btn-secondary"
+                                onclick="$('#addModal').modal('hide');">Close</button>
                             <button type="button" class="btn btn-primary" onclick=addItem()>Add Item</button>
                         </div>
                     </div>
@@ -131,6 +133,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
+                            <div id="addErrorMessage" class="alert alert-danger d-none"></div>
                             <form id="editForm">
                                 <div class="form-group">
                                     <label for="editItemName">Item Name</label>
@@ -142,7 +145,8 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="$('#editModal').modal('hide');">Close</button>
+                            <button type="button" class="btn btn-secondary"
+                                onclick="$('#editModal').modal('hide');">Close</button>
                             <button type="button" class="btn btn-primary" id="updateItem" onclick=editItem()>Save
                                 changes</button>
                         </div>
@@ -153,7 +157,20 @@
             <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <script>
-                console.log(typeof $);
+                $(document).ready(function () {
+                    $('#addModal').on('hidden.bs.modal', function () {
+                        $(this).find('form')[0].reset();
+                    });
+
+                    $('#editModal').on('hidden.bs.modal', function () {
+                        $(this).find('form')[0].reset();
+                    });
+                });
+
+                $('#addModal, #editModal').on('hidden.bs.modal', function () {
+                    $(this).find('.alert').addClass('d-none').text(''); // Hide the error message
+                });
+
 
                 function showAddModal(category) {
                     document.getElementById('addCategory').value = category;
@@ -178,7 +195,7 @@
                             data: JSON.stringify({ name, categoryType }),
                             success: function (response) {
                                 if (response.error) {
-                                    alert(response.error);
+                                    $('#addErrorMessage').removeClass('d-none').text(response.error);
                                 } else {
                                     alert(response.message);
                                     $('#addModal').modal('hide')
@@ -186,13 +203,13 @@
                                 }
                             },
                             error: function (xhr, status, error) {
-                                console.error('Error:', error);
+                                $('#addErrorMessage').removeClass('d-none').text(xhr.responseJSON.error || "An error occurred");
                             }
                         });
                     }
                 }
 
-                function editItem() {   
+                function editItem() {
 
                     const name = document.getElementById('editItemName').value;
                     const categoryType = document.getElementById('editCategory').value;
@@ -208,7 +225,7 @@
                             data: JSON.stringify({ id, name, categoryType }),
                             success: function (response) {
                                 if (response.error) {
-                                    alert(response.error);
+                                    $('#editErrorMessage').removeClass('d-none').text(response.error)
                                 } else {
                                     alert(response.message);
                                     $('#editModal').modal('hide')
@@ -216,11 +233,11 @@
                                 }
                             },
                             error: function (xhr, status, error) {
-                                console.error('Error:', error);
+                                $('#editErrorMessage').removeClass('d-none').text(xhr.responseJSON.error || "An error occurred")
                             }
                         })
                     } else {
-                        alert('Please fill out all fields.');
+                        $('#editErrorMessage').removeClass('d-none').text('Please fill in all required fields.');
                     }
                 }
 

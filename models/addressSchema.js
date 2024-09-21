@@ -14,13 +14,21 @@ const addressSchema = new Schema({
             type: String,
             require: true,
         },
-        name: {
+        firstName: {
             type: String,
             required: true
         },
-        city: {
+        lastName: {
             type: String,
-            required: true
+            required: false
+        },
+        houseNo: {
+            type: String,
+            required:true
+        },
+        area:{
+            type: String,
+            required:true
         },
         landmark: {
             type: String,
@@ -35,11 +43,7 @@ const addressSchema = new Schema({
             required: true
         },
         phone: {
-            type: String,
-            required: tru
-        },
-        altPhone: {
-            type: String,
+            type: Number,
             required: true
         }
     }]

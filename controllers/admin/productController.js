@@ -7,63 +7,35 @@ const path = require('path')
 const sharp = require('sharp')
 
 
-
-async function saveCroppedImages(imagePath, size) {
-    try {
-        const imageName = path.basename(imagePath);
-        const outputDir = path.join(__dirname, '../../uploads/resized');
-        const outputPath = path.join(outputDir, imageName);
-
-        // Create the directory if it doesn't exist
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-        };
-
-        await sharp(imagePath)
-            .resize(size)
-            .toFile(outputPath);
-
-        return outputPath;
-    } catch (error) {
-        console.error('Error processing image:', error);
-        throw error;
-    }
-}
-
-
 const getProductAdd = async (req, res) => {
     try {
-        if (!req.session.admin) {
-            return res.redirect("/admin/login")
-        } else {
             const category = await Category.find({ categoryType: "type", isListed: true })
             const brand = await Category.find({ categoryType: "brand", isListed: true })
             const products = await Product.find()
             res.render("admin/addProduct", { category, brand, products })
-        }
     } catch (error) {
         console.log(error)
-        res.redirect("/admin/login")
+        res.redirect("/admin/login")    
     }
 }
 
 const addProduct = async (req, res) => {
-    console.log("Adding product...");
-    console.log(req.files)
     upload(req, res, async (err) => {
         if (err) {
             console.error("Multer error:", err);
-            return res.render('admin/addProduct', { error: 'File upload error' });
+            return res.status(400).json({ success: false,error: 'File upload error' });
         }
 
         try {
-            // Destructure the fields from the request body
             const { productName, brand, category, regularPrice, salePrice, quantity, color, brakeStyle, numberOfGears, description } = req.body;
 
-            // Ensure required fields are present
             if (!productName || !brand || !category) {
                 console.error('Missing required product details');
-                return res.render('admin/addProduct', { error: 'Missing required product details' });
+                return res.status(400).json({ success: false,error: 'Missing required product details', showModal: true });
+            }
+            if(quantity < 0 || regularPrice < 0 || salePrice < 0 ){
+                console.log('ereq')
+                return res.status(400).json({success: false, error: 'Numbers must be greater than zero', showModal: true })
             }
 
             // Process and resize images
@@ -73,13 +45,15 @@ const addProduct = async (req, res) => {
             for (const key of fileKeys) {
                 const fileArray = req.files[key];
                 for (const file of fileArray) {
-                    const resizedImagePath = await saveCroppedImages(file.path, { width: 300, height: 300 });
-                    console.log('Resized image path:', resizedImagePath);
-                    resizedImages.push(path.basename(resizedImagePath));
+                    const filename = `${Date.now()}-${file.originalname}`;
+                    const outputPath = path.join(__dirname, '../../uploads/resized', filename)
+
+                    await sharp(file.buffer)
+                    .resize(300, 300)
+                    .toFile(outputPath)
+                    resizedImages.push(filename);
                 }
             }
-
-            console.log('Uploaded Files:', resizedImages);
 
             // Create new product instance
             const product = new Product({
@@ -97,14 +71,12 @@ const addProduct = async (req, res) => {
                 status: 'Available',
             });
 
-            // Save product to the database
             await product.save();
             console.log("Product saved successfully:", product);
-            res.redirect('/admin/addProduct');
-
+            return res.status(200).json({ success: true, message: 'Product added successfully!' });
         } catch (error) {
             console.error('Error saving product:', error);
-            res.render('admin/addProduct', { error: 'An error occurred while saving the product.' });
+            return res.status(500).json({ success: false, error: 'An error occurred while saving the product.' });
         }
     });
 };
@@ -130,6 +102,7 @@ const unblockProduct = async (req, res) => {
 }
 
 const getEditProduct = async (req,res) =>{
+    
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -143,37 +116,44 @@ const getEditProduct = async (req,res) =>{
 }
 
 const editProduct = async (req, res) => {
-    try {
-        const { productId, productName, brand, category, description, regularPrice, salePrice, quantity, color, brakeStyle, numberOfGears } = req.body;
 
-        if (req.session.admin) {
-            // Check if all required fields are provided
+    try {
+        console.log(req.body)
+        const { productId, productName, brand, category, description, regularPrice, salePrice, quantity, color, brakeStyle, numberOfGears } = req.body;
+        
             if (!productId || !productName || !brand || !category || !description || !regularPrice || !salePrice || !quantity || !color || !brakeStyle || !numberOfGears) {
                 return res.status(400).json({ error: "All fields are required" });
             }
 
-            // Find the product by ID
+            if (!productName || !brand || !category) {
+                console.error('Missing required product details');
+                return res.render('admin/addProduct', { error: 'Missing required product details' });
+            }
+
+            if(quantity < 0 || regularPrice < 0 || salePrice < 0 ){
+                console.log("hloo")
+                // return res.status(400).json({ success: false, error: 'Invalid address selected.' });
+                return res.status(400).json({success: false, error: 'Numbers must be greater than zero' })
+            }
+
             const product = await Product.findById(productId);
             if (!product) {
                 return res.status(404).json({ error: "Product not found" });
             }
 
-            // Normalize product name
             const normalizedProductName = productName.trim().toLowerCase();
 
-            // Check if a product with the same name and category already exists (excluding the current product)
             const existingProduct = await Product.findOne({
                 name: { $regex: new RegExp('^' + normalizedProductName + '$', 'i') },
                 category,
-                _id: { $ne: productId } // Exclude the current product
+                _id: { $ne: productId } 
             });
 
             if (existingProduct) {
                 return res.status(400).json({ error: "Product with the same name already exists in this category" });
             }
 
-            // Update the product with the new details
-            product.name = productName;
+            product.productName = productName;
             product.brand = brand;
             product.category = category;
             product.description = description;
@@ -184,13 +164,11 @@ const editProduct = async (req, res) => {
             product.brakeStyle = brakeStyle;
             product.numberOfGears = numberOfGears;
 
-            // Save the updated product
             await product.save();
+            console.log("success")
 
             return res.json({ message: 'Product updated successfully' });
-        } else {
-            res.redirect('/admin/login');
-        }
+
     } catch (error) {
         console.error('Server Error:', error.message);
         return res.status(500).json({ error: "Internal server error" });

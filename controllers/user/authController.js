@@ -49,15 +49,15 @@ async function sendVerificationEmail(email, otp) {
 }
 
 const signup = async (req, res) => {
-    
+
     try {
         const { name, email, password, cPassword } = req.body
         if (password !== cPassword) {
-            return res.render("user/signup",{message:"Your password doesn't match"})
+            return res.render("user/signup", { message: "Your password doesn't match" })
         }
-        const findUser = await User.findOne({email})
+        const findUser = await User.findOne({ email })
         if (findUser) {
-            return res.render("user/signup", {exist: "This email is already exist"})
+            return res.render("user/signup", { exist: "This email is already exist" })
         }
         const otp = generateOtp()
         const emailSend = await sendVerificationEmail(email, otp)
@@ -95,7 +95,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body
         const findUser = await User.findOne({ isAdmin: 0, email: email })
-        
+
 
         if (req.session.user) {
             return res.redirect('/')
@@ -115,7 +115,7 @@ const login = async (req, res) => {
         res.redirect('/')
     } catch (error) {
         console.log("login error", error)
-        res.redirect("user/login", {error:"there is some error in your login"})
+        res.redirect("user/login", { error: "there is some error in your login" })
     }
 }
 
@@ -197,30 +197,127 @@ const resendOtp = async (req, res) => {
 }
 
 
-const loadEmailpage = async (req, res) => {
+const loadForgotPass = async (req, res) => {
     try {
         if (!req.session.user) {
-            return res.render("user/email")
+            return res.render("user/forgotPass")
         }
     } catch (error) {
         console.log("product page error", error)
-        res.status(500).send("server error")
+        res.redirect("/login")
     }
 }
 
 
-const loadChangepasswordpage = async (req, res) => {
+const checkMail = async (req, res) => {
     try {
-        if(req.session.user){
-            return res.render("user/changePass")
-        }else{
-            return req.redirect("/login")
-        }  
+        const { email } = req.body;
+        console.log(email)
+
+        const user = await User.findOne({ email });
+
+        if (user) {
+            const otp = generateOtp();
+            const emailSend = await sendVerificationEmail(email, otp);
+
+            if (emailSend) {
+                req.session.userOtp = otp;
+                req.session.otpExpires = Date.now() + 60 * 1000; // 1 minute
+                req.session.email = email;
+
+                res.redirect("/forgotOtp"); // Redirect to OTP page
+                console.log("OTP:", otp);
+            } else {
+                res.render("user/forgotPass", { error: "Error in sending OTP" });
+            }
+        } else {
+            console.log('No account with that email exists.')
+            return res.render("user/forgotPass", { error: 'No account with that email exists.' });
+        }
+    } catch (error) {
+        console.log(error, "Error sending OTP");
+        res.status(500).json({ success: false, message: "An error occurred" });
+    }
+};
+
+
+const forgotOtp = async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.render("user/forgotOtp")
+        }
     } catch (error) {
         console.log("product page error", error)
-        res.status(500).send("server error")
+        res.redirect("/login")
     }
 }
+
+
+const verifyForgot = async (req, res) => {
+    try {
+        const { otp } = req.body;
+        console.log("otp:::",otp)
+        if (otp.trim() === req.session.userOtp.trim() && Date.now() < req.session.otpExpires) {
+            console.log("hmm")
+            console.log(req.session.email)
+            req.session.userData = await User.findOne({ email:req.session.email });
+            req.session.userOtp = null;
+            console.log(req.session.userOtp)
+            req.session.otpExpires = null;
+            console.log(req.session.otpExpires)
+            res.status(200).json({ success: true, redirectUrl: "/resetPassword" })
+        } else {
+            console.log("kooi")
+            res.status(400).json({ success: false, message: "Invalid OTP or OTP expired" });
+        }
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ success: false, message: "An error occurred" });
+    }
+};
+
+
+const loadResetPassword = (req, res) => {
+    if (req.session.email) {
+        res.render("user/resetPassword", { email: req.session.email });
+    } else {
+        res.redirect("/forgotPassword");
+    }
+};
+
+
+const saveNewPassword = async (req, res) => {
+    try {
+        const { password } = req.body;
+        const email = req.session.email;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Session expired. Please try again." });
+        }
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({ success: false, message: "Password must be at least 6 characters long." });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const result = await User.updateOne({ email: email }, { $set: { password: hashedPassword } });
+
+        if (result.nModified === 0) {
+            return res.status(404).json({ success: false, message: "User not found or password unchanged." });
+        }
+
+        req.session.email = null;
+        req.session.userOtp = null;
+
+        res.status(200).json({ success: true, message: "Password updated successfully." });
+    } catch (error) {
+        console.error("Error updating password:", error);
+        res.status(500).json({ success: false, message: "An error occurred. Please try again." });
+    }
+};
+
 
 
 const logout = async (req, res) => {
@@ -238,15 +335,15 @@ const logout = async (req, res) => {
 }
 
 
-const success = async (req,res)=>{
-    try{
+const success = async (req, res) => {
+    try {
         const findUser = await User.findOne({ email: req.user.email })
         if (findUser.isBlocked) {
             return res.render("user/login", { error: "User is blocked by Admin" })
         }
         req.session.user = findUser;
         res.redirect('/')
-    }catch(error){
+    } catch (error) {
         res.redirect("/login")
     }
 }
@@ -256,12 +353,16 @@ module.exports = {
     loadSignuppage,
     loadLoginpage,
     loadOtppage,
-    loadEmailpage,
-    loadChangepasswordpage,
     signup,
     verifyOtp,
     resendOtp,
     login,
     logout,
-    success
+    success,
+    loadForgotPass,
+    checkMail,
+    forgotOtp,
+    verifyForgot,
+    saveNewPassword,
+    loadResetPassword
 }

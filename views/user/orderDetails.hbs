@@ -1,0 +1,142 @@
+<style>
+    h2,
+    h4 {
+        font-weight: bold;
+    }
+
+    .order-summary,
+    .shipping-payment-section {
+        margin-bottom: 30px;
+    }
+
+    .shipping-payment-section {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .cancel-btn {
+        margin-top: 20px;
+    }
+
+    .table-responsive {
+        margin-top: 20px;
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+    }
+</style>
+
+
+{{> user/header}}
+
+<div class="container mt-5">
+
+    <!-- Order ID and Title -->
+    <h5 class="mb-4">Order #{{order.orderId}}</h5>
+
+    <div class="shipping-payment-section">
+        <div class="order-summary">
+            <h4>Shipping Address</h4>
+            <p><strong> Name : {{address.[0].firstName}} {{address.[0].lastName}}</strong></p>
+            <p> house No: {{address.[0].houseNo}},Area : {{address.[0].area}}</p>
+            <p> Landmark: {{address.[0].landmark}}</p>
+            <p>State: {{address.[0].state}}, PinCode: {{address.[0].pincode}}</p>
+        </div>
+
+        <div class="order-summary">
+            <h4>Payment Method</h4>
+            <p><strong>{{order.paymentMethod}}</strong></p>
+            <p>Total:<strong> ${{order.totalPrice}}</strong></p>
+        </div>
+    </div>
+
+    <h4>Items Ordered</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each order.orderdItems}}
+                <tr>
+                    <td>{{this.product.productName}}</td>
+                    <td>{{this.quantity}}</td>
+                    <td>${{this.price}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="/orders" class="btn btn-secondary">Back to Orders</a>
+        <button class="btn btn-danger cancel-btn" onclick="cancelOrder('{{order.orderId}}')">Cancel Order</button>
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-labelledby="cancelConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelConfirmLabel">Confirm Cancellation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to cancel this order?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+
+
+
+<script>
+    let selectedOrderId = null;
+
+    function cancelOrder(orderId) {
+        selectedOrderId = orderId;
+        const cancelModal = new bootstrap.Modal(document.getElementById('cancelConfirmModal'));
+        cancelModal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('confirmCancelBtn').addEventListener('click', function () {
+            if (selectedOrderId) {
+                fetch(`/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ orderId: selectedOrderId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/orders';
+                        } else {
+                            console.error('Error:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        });
+    });
+
+
+</script>

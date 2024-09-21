@@ -28,6 +28,10 @@ hbs.registerHelper('formatDate',function(date){
   return moment(date).format('YYYY-MM-DD  HH:mm:ss')
 })
 
+hbs.registerHelper('json', function(context) {
+  return JSON.stringify(context);
+});
+
 app.set('view engine', 'hbs');
 
 app.use(logger('dev'));

@@ -3,8 +3,9 @@ body {
 }
 
 .signup-box {
-    width: 500px; /* Decreased width for a smaller box */
-    padding: 10px; 
+    width: 500px;
+    /* Decreased width for a smaller box */
+    padding: 10px;
     background-color: #ffffff;
     border: 2px solid #ced4da;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -16,15 +17,17 @@ h2 {
     font-size: 22px;
     font-weight: bold;
     margin-bottom: 15px;
-    text-align: center; 
+    text-align: center;
 }
 
 .form-label {
     margin-bottom: 5px;
     font-size: 14px;
     color: #495057;
-    text-align: left; /* Align labels to the left */
-    display: block; /* Ensure labels take full width */
+    text-align: left;
+    /* Align labels to the left */
+    display: block;
+    /* Ensure labels take full width */
 }
 
 .form-control {
@@ -39,7 +42,8 @@ h2 {
     background-color: #3b4b45;
     border: none;
     height: 35px;
-    width: 50%; /* Decreased width for the button */
+    width: 50%;
+    /* Decreased width for the button */
 }
 
 .btn-light {
@@ -67,13 +71,18 @@ h2 {
     text-align: center;
 }
 
-.logo {
-    max-width: 150%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
+.logo-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
 }
-.error-message{
+
+.logo-container img {
+    width: 200px;
+    height: auto;
+}
+
+.error-message {
     color: red;
     font-size: 0.75rem;
     display: none;
