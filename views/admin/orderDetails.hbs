@@ -120,8 +120,8 @@
     <div class="order-details">
         <div class="order-info">
             <h1>Order Details:</h1>
-            <p class="order-date">Ordered at {{formatDate order.orderedAt}}</p>
-            {{#if order.cod}}
+            <p class="order-date">Ordered at {{formatDate orders.orderedAt}}</p>
+            {{#if (eq orders.paymentMethod 'cod')}}
             <span class="cod-badge">Payment Method: COD</span>
             {{else}}
             <span class="cod-badge">Payment Method: RazorPay</span>
@@ -159,6 +159,8 @@
                 <option value="shipped" {{#if (eq orders.status 'shipped' )}}selected{{/if}}>Shipped</option>
                 <option value="delivered" {{#if (eq orders.status 'delivered' )}}selected{{/if}}>Delivered</option>
                 <option value="cancelled" {{#if (eq orders.status 'cancelled' )}}selected{{/if}}>Cancelled</option>
+                <option value="return Request" {{#if (eq orders.status 'return Request' )}}selected{{/if}}>Return Request</option>
+                <option value="returned" {{#if (eq orders.status 'returned' )}}selected{{/if}}>Returned</option>
             </select>
         </div>
     </div>

@@ -7,6 +7,10 @@ const wishlistSchema = new Schema({
         ref:"User",
         required:true
     },
+    status:{
+        type:Boolean,
+        default:true
+    },
     products:[{
         productId:{
             type:Schema.Types.ObjectId,

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+    <link href="/styles.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #000000;
+        }
+
+        .table {
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background-color: #28a745;
+            /* Changed to green for positive action */
+            border-color: #28a745;
+        }
+
+        .btn-primary:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            /* Red for delete action */
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+    </style>
+</head>
+
+<body>
+    {{> admin/header}}
+    <div class="container mt-4">
+        <h1 class="mb-4">Offers</h1>
+
+        <div class="mb-4">
+            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#productModal">
+                Add New Product Offer
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#brandModal">
+                Add New Brand Offer
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Product Offers</h2>
+                <table class="table" id="productOfferTable">
+                    <thead>
+                        <tr>
+                            <th>Brand Name</th>
+                            <th>Status</th>
+                            <th>Percentage</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each offerProducts}}
+                        <tr>
+                            <td>{{productName}}</td>
+                            <td>{{regularPrice}}</td>
+                            <td>{{productOffer}}%</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#confirmModal" onclick="setOfferId('product', '{{this.id}}')">Remove
+                                    Offer</button>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h2>Brand Offers</h2>
+                <table class="table" id="brandOfferTable">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Percentage</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each offerBrands}}
+                        <tr>
+                            <td>{{name}}</td>
+                            <td>{{brandOffer}}%</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#confirmModal" onclick="setOfferId('brand', '{{this.id}}')">Remove
+                                    Offer</button>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Offer Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">Select Product to Add Offer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table" id="addProductOfferTable">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Add Offer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each notOffer}}
+                            <tr>
+                                <td>{{productName}}</td>
+                                <td>{{regularPrice}}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm add-offer-btn" data-product-id="{{this.id}}"
+                                        data-bs-toggle="modal" data-bs-target="#percentageModal"
+                                        onclick="setOfferId('product', '{{this.id}}')">
+                                        Add Offer
+                                    </button>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Offer Modal -->
+    <div class="modal fade" id="brandModal" tabindex="-1" aria-labelledby="brandModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="brandModalLabel">Select Brand to Add Offer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table" id="addBrandOfferTable">
+                        <thead>
+                            <tr>
+                                <th>Brand Name</th>
+                                <th>Add Offer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each notOfferBrands}}
+                            <tr>
+                                <td>{{name}}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm add-offer-btn" data-brand-id="{{this.id}}"
+                                        data-bs-toggle="modal" data-bs-target="#percentageModal"
+                                        onclick="setOfferId('brand', '{{this.id}}')">
+                                        Add Offer
+                                    </button>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirm Removal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove this offer?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmRemoveBtn">Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="percentageModal" tabindex="-1" aria-labelledby="percentageModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="percentageModalLabel">Add Offer Percentage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addOfferForm">
+                        <div class="mb-3">
+                            <label for="percentageInput" class="form-label">Offer Percentage</label>
+                            <input type="number" class="form-control" id="percentageInput"
+                                placeholder="Enter offer percentage" min="1" max="100" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Offer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let offerId;
+        let offerType;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const addOfferForm = document.getElementById('addOfferForm');
+
+            addOfferForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const percentage = document.getElementById('percentageInput').value;
+                if (!offerId || !offerType) {
+                    console.error('Offer type or ID is not set');
+                    return;
+                }
+
+                const offerData = {
+                    offerType: offerType,
+                    offerId: offerId,
+                    percentage: percentage
+                }
+
+                fetch('/admin/addOffer', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(offerData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Offer Added",
+                                text: "offer added successfully!"
+                            }).then(() => {
+                                window.location.reload();
+                            });
+
+                            bootstrap.Modal.getInstance(percentageModal).hide();
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Oops...",
+                                text: "Something went wrong while adding the offer"
+                            })
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Unable to add the offer. Please check your connection and try again."
+                        })
+                        console.log(error)
+                    })
+
+            });
+
+            percentageModal.addEventListener('hidden.bs.modal', function () {
+                percentageInput.value = '';
+            });
+        });
+
+        function setOfferId(type, id) {
+            offerType = type;
+            offerId = id;
+        }
+
+        document.getElementById('confirmRemoveBtn').addEventListener('click', function (e) {
+
+            e.preventDefault()
+
+            if (!offerId || !offerType) {
+                console.error('Offer type or ID is not set');
+                return;
+            }
+
+            const removeData = {
+                offerType: offerType,
+                offerId: offerId
+            }
+
+            fetch('/admin/removeOffer', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(removeData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Offer removed",
+                            text: "offer removed successfully!"
+                        }).then(() => {
+                            window.location.reload();
+                        });
+
+                        const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text: "Something went wrong while removing the offer"
+                        })
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Unable to remove the offer. Please check your connection and try again."
+                    })
+                    console.log(error)
+                })
+
+
+        });
+
+
+        $(document).ready(function () {
+            $('#productOfferTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                lengthChange: false
+            });
+        });
+        $(document).ready(function () {
+            $('#brandOfferTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                lengthChange: false
+            });
+        });
+        $(document).ready(function () {
+            $('#addBrandOfferTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true
+            });
+        });
+        $(document).ready(function () {
+            $('#addProductOfferTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true
+            });
+        });
+    </script>
+</body>
+
+</html>

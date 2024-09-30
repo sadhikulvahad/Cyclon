@@ -33,21 +33,23 @@
 <div class="container mt-5">
 
     <!-- Order ID and Title -->
-    <h5 class="mb-4">Order #{{order.orderId}}</h5>
+    <h6 class="mb-4">Order #{{order.orderId}}</h6>
 
     <div class="shipping-payment-section">
         <div class="order-summary">
-            <h4>Shipping Address</h4>
-            <p><strong> Name : {{address.[0].firstName}} {{address.[0].lastName}}</strong></p>
-            <p> house No: {{address.[0].houseNo}},Area : {{address.[0].area}}</p>
-            <p> Landmark: {{address.[0].landmark}}</p>
-            <p>State: {{address.[0].state}}, PinCode: {{address.[0].pincode}}</p>
+            <h4>Shipping Address</h4><br>
+            <p class="mb-0"><strong> Name : {{address.[0].firstName}} {{address.[0].lastName}}</strong></p>
+            <p class="mb-0"> <strong>house No :</strong> {{address.[0].houseNo}}, <strong> Area :</strong>
+                {{address.[0].area}}</p>
+            <p class="mb-0"> <strong>Landmark :</strong> {{address.[0].landmark}}</p>
+            <p class="mb-0"><strong>State :</strong> {{address.[0].state}}, PinCode: {{address.[0].pincode}}</p>
         </div>
 
         <div class="order-summary">
-            <h4>Payment Method</h4>
-            <p><strong>{{order.paymentMethod}}</strong></p>
-            <p>Total:<strong> ${{order.totalPrice}}</strong></p>
+            <h5>Payment Method : <strong>{{#if (eq order.paymentMethod "razorpay")}} RazorPay {{else}} Cash On Delivery
+                    {{/if}}</strong></h5>
+            <p><strong>Order Status :</strong>{{order.status}}</p><br><br>
+            <p>Total:<strong> ₹{{order.totalPrice}}</strong></p>
         </div>
     </div>
 
@@ -66,7 +68,7 @@
                 <tr>
                     <td>{{this.product.productName}}</td>
                     <td>{{this.quantity}}</td>
-                    <td>${{this.price}}</td>
+                    <td>₹{{this.price}}</td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -75,7 +77,21 @@
 
     <div class="d-flex justify-content-between">
         <a href="/orders" class="btn btn-secondary">Back to Orders</a>
-        <button class="btn btn-danger cancel-btn" onclick="cancelOrder('{{order.orderId}}')">Cancel Order</button>
+        {{#if (eq order.status "delivered")}}
+        <button class="btn btn-danger return-btn" onclick="returnOrder('{{order.orderId}}')">Return order</button>
+        {{else}}
+        {{#if (eq order.status "return Request")}}
+        <button class="btn btn-danger cancelReturn-btn">Cancel Return</button>
+        {{else}}
+        {{#if (eq order.status "returned")}}
+        <button class="btn btn-danger cancelReturn-btn" {{#if (eq order.status "returned" )}}disabled{{/if}}>Cancel
+            Return</button>
+        {{else}}
+        <button class="btn btn-danger cancel-btn" onclick="cancelOrder('{{order.orderId}}')" {{#if (eq
+            order.status "cancelled" )}}disabled{{/if}}>Cancel Order</button>
+        {{/if}}
+        {{/if}}
+        {{/if}}
     </div>
 </div>
 
@@ -98,6 +114,27 @@
     </div>
 </div>
 
+<!-- return Confirmation Modal -->
+<div class="modal fade" id="returnConfirmModal" tabindex="-1" aria-labelledby="cancelConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelConfirmLabel">Confirm your Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to return this order?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="confirmReturnBtn">Yes, Retrun</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
@@ -113,10 +150,41 @@
         cancelModal.show();
     }
 
+    function returnOrder(orderId) {
+        selectedOrderId = orderId
+        const returnModal = new bootstrap.Modal(document.getElementById('returnConfirmModal'))
+        returnModal.show()
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirmCancelBtn').addEventListener('click', function () {
             if (selectedOrderId) {
                 fetch(`/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ orderId: selectedOrderId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/orders';
+                        } else {
+                            console.error('Error:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('confirmReturnBtn').addEventListener('click', function () {
+            if (selectedOrderId) {
+                fetch(`/return`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

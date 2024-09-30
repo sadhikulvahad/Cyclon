@@ -122,7 +122,7 @@
                     <tr>
                         <td>{{productName}}</td>
                         <td>{{category}}</td>
-                        <td>{{salePrice}}</td>
+                        <td>{{regularPrice}}</td>
                         <td>{{quantity}}</td>
                         <td>
                             {{#if isBlocked}}
@@ -223,17 +223,17 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-4">
                                             <label class="form-label">Regular Price</label>
-                                            <input placeholder="$" name="regularPrice" type="text"
+                                            <input placeholder="₹" name="regularPrice" type="text"
                                                 class="form-control border">
                                             <div id="regularPrice-error" class="error-message"></div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group mb-4">
-                                            <label class="form-label">Sale Price</label>
-                                            <input placeholder="$" name="salePrice" type="text"
+                                            <label class="form-label">Product Offer</label>
+                                            <input placeholder="%" name="productOffer" type="text"
                                                 class="form-control border">
-                                            <div id="salePrice-error" class="error-message"></div>
+                                            <div id="productOffer-error" class="error-message"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -510,12 +510,6 @@
                                         class="form-control border">
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Sale Price</label>
-                                    <input type="text" id="editSalePrice" name="salePrice" class="form-control border">
-                                </div>
-                            </div>
                         </div>
 
                         <div class="row">
@@ -727,14 +721,14 @@
                         if (response.success) {
                             alert('Product added successfully!');
                             $('#addProductModal').modal('hide');
-                            window.location.reload();  // Refresh the page or update the product list
+                            window.location.reload();  
                         } else {
-                            $('#error-message').text(response.error).show();  // Show error in the modal
+                            $('#error-message').text(response.error).show(); 
                         }
                     },
                     error: function (xhr) {
                         const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An unknown error occurred.';
-                        $('#error-message').text(errorMessage).show();  // Show error in the modal
+                        $('#error-message').text(errorMessage).show();  
                     }
                 });
             });
@@ -806,7 +800,6 @@
                         $('#editCategory').val(productData.category);
                         $('#editDescription').val(productData.description);
                         $('#editRegularPrice').val(productData.regularPrice);
-                        $('#editSalePrice').val(productData.salePrice);
                         $('#editQuantity').val(productData.quantity);
                         $('#editColor').val(productData.color);
                         $('#editBrakeStyle').val(productData.brakeStyle);

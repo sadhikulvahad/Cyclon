@@ -41,8 +41,10 @@ const cartSchema = new Schema({
     }
 })
 
-cartSchema.methods.calculateTotalPrice = function () {
-    this.totalPrice = this.items.reduce((total, item) => total + item.totalPrice, 0);
+cartSchema.methods.calculateTotalPrice = function() {
+    this.totalPrice = this.items.reduce((total, item) => {
+        return total + (item.price * item.quantity); // Adjust based on your schema
+    }, 0);
 };
 
 const Cart = mongoose.model("Cart", cartSchema)

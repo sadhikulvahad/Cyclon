@@ -38,6 +38,17 @@ router.get("/orderControl/:id",orderController.orderDetails)
 
 router.post("/order-status",orderController.updateOrder)
 
+router.get("/offers",productController.getOffers)
+router.post("/addOffer",productController.addOffer)
+router.post("/removeOffer",productController.removeOffer)
+
+router.get("/coupons",productController.getCoupon)
+router.post("/addCoupon",productController.addCoupon)
+router.put("/editCoupon",productController.editCoupon)
+router.delete("/couponDelete/:id",productController.deleteCoupon)
+
+router.post("/salesReport",adminController.salesReport)
+
 
 
 

@@ -16,30 +16,35 @@ router.get("/product/:id",productController.getProduct)
 
 router.get("/profile",userAuth,profileController.profile)
 router.get("/orders",userAuth,profileController.userOrders)
-router.get("/wishlist",userAuth,profileController.wishlist)
+router.get("/wishlist",userAuth,profileController.getWishlist)
 router.get("/wallet",userAuth,profileController.wallet)
 router.get("/coupons",userAuth,profileController.coupons)
 router.get("/changePassword",userAuth,profileController.changePassword)
 router.get("/cart",userAuth,profileController.cart)
 router.get("/checkoutPage",userAuth,profileController.checkout)
-router.post("/getAddress",profileController.addAddress)
-router.put("/updateProfile",profileController.editProfile)
-router.put("/updateAddress",profileController.editAddress)
-router.delete("/deleteAddress/:id",profileController.deleteAddress)
-router.post("/changePass",profileController.changePass)
+router.post("/getAddress",userAuth,profileController.addAddress) 
+router.put("/updateProfile",userAuth,profileController.editProfile)
+router.put("/updateAddress",userAuth,profileController.editAddress)
+router.delete("/deleteAddress/:id",userAuth,profileController.deleteAddress)
+router.post("/changePass",userAuth,profileController.changePass)
 
 router.post("/addToCart",userAuth,profileController.addToCart)
 router.post("/updateQuantity",userAuth,profileController.updateQuantity)
 router.post("/removeItem",userAuth,profileController.removeItem)
-router.get("/get-addresses",profileController.getAddress)
-router.post("/select-address/:id", profileController.selectAddress)
+router.get("/get-addresses",userAuth,profileController.getAddress)
+router.post("/select-address/:id",userAuth, profileController.selectAddress)
 
-router.get("/orderSuccess",userAuth,profileController.getSuccess)
-router.post("/place-order",profileController.addOrder)
-router.post("/cancel",profileController.cancelOrder)
+router.get("/orderSuccess",userAuth,userAuth,profileController.getSuccess)
+router.post("/place-order",userAuth,profileController.addOrder)
+router.post("/verify-payment",userAuth,profileController.verifyPayment)
+router.post("/cancel",userAuth,profileController.cancelOrder)
+router.post("/return",userAuth,profileController.returnOrder)
+
+router.post("/addWishlist",userAuth,profileController.addToWishlist)
 
 router.get("/orderDetails/:id",userAuth,profileController.orderDetails)
 
+router.post("/applyCoupon", userAuth,profileController.checkCouponCode)
 
 
 

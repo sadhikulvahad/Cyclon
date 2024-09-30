@@ -78,10 +78,11 @@
                 <!-- Coupon Code -->
                 <div class="mb-4">
                     <div class="input-group">
-                        <input type="text" name="couponCode" class="form-control" placeholder="Enter Your coupon code"
+                        <input type="text" name="couponCode" id="couponCode" class="form-control" placeholder="Enter Your coupon code"
                             aria-label="Coupon code">
                         <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
                     </div>
+                    <div id="coupon-message" class="mt-2"></div>
                 </div>
             </div>
 
@@ -96,13 +97,18 @@
                     <div class="d-flex justify-content-between mb-2">
                         <span>Delivery charges :</span>
                         <span class="text-success">₹{{orderSummery.deliveryCharges}}</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
+                    </div><br>
+                    <div class="d-flex justify-content-between"><span>Coupon Applied :</span><span  id="coupon-discount">0%</span></div>
+                    <div class="d-flex justify-content-between mb-0">
                         <strong>Order Total :</strong>
                         <strong>₹{{orderSummery.total}}</strong>
                     </div>
-                    <a href="/orderSuccess"><button class="btn btn-primary w-100 place-order-btn">Place
-                            Order</button></a>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Final amount :</strong>
+                        <span id="order-total"><strong>₹{{orderSummery.total}}</strong></span>
+                    </div>
+                    <span id="return-message" style="color: green;"></span>
+                    <button type="submit" id="rzp-button" class="btn btn-primary w-100 place-order-btn" {{#unless orderSummery.itemCount}}disabled{{/unless}}>Place Order</button>
                 </div>
             </div>
         </div>
@@ -195,192 +201,302 @@
 
 
 
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="path/to/your/javascript.js"></script>
 <script src="/js/main.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
 <script>
-    const errorMessage = document.getElementById('error-message')
+    const errorMessage = document.getElementById('error-message');
 
     $(document).ready(function () {
         function updateAddressDisplay(address) {
             const addressHtml = `
-            <p class="mb-0"><strong>${address.firstName} ${address.lastName}</strong></p>
-            <p class="mb-0">House No: ${address.houseNo}</p>
-            <p class="mb-0">Area: ${address.area}</p>
-            <p class="mb-0">Landmark: ${address.landmark}</p>
-            <p class="mb-0">Phone No: ${address.phone}</p>
-            <p class="mb-0">State: ${address.state}</p>
-            <p class="mb-0">PinCode: ${address.pincode}</p>
-            <a class="change-address" data-bs-toggle="modal" data-bs-target="#changeAddressModal" style="color: blue;">Change Address</a>
-        `;
+                <p class="mb-0"><strong>${address.firstName} ${address.lastName}</strong></p>
+                <p class="mb-0">House No: ${address.houseNo}</p>
+                <p class="mb-0">Area: ${address.area}</p>
+                <p class="mb-0">Landmark: ${address.landmark}</p>
+                <p class="mb-0">Phone No: ${address.phone}</p>
+                <p class="mb-0">State: ${address.state}</p>
+                <p class="mb-0">PinCode: ${address.pincode}</p>
+                <a class="change-address" data-bs-toggle="modal" data-bs-target="#changeAddressModal" style="color: blue;">Change Address</a>
+            `;
             $('#selectedAddress').html(addressHtml);
             $('#selectedAddressInput').val(address._id);
         }
 
-        $('#checkoutForm').on('submit', function (e) {
-            e.preventDefault();
-            const selectedAddressId = $('#selectedAddressInput').val();
-            const paymentMethod = $('input[name="paymentMethod"]:checked').val();
-            const couponCode = $('input[name="couponCode"]').val();
+            // Handle payment method selection
+            document.getElementById('rzp-button').onclick = function (e) {
+                e.preventDefault(); // Prevent default form submission
 
-            console.log('address:', selectedAddressId);
-            console.log('payment:', paymentMethod);
-            console.log('coupon:', couponCode);
+                const selectedAddressId = $('#selectedAddressInput').val();
+                const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+                const couponCode = $('input[name="couponCode"]').val();
+                const finalPriceString = document.getElementById('order-total').textContent
+                const finalPrice = Number(finalPriceString.replace(/[₹,]/g, '').trim());
 
-            const orderSummary = {
-                itemCount: {{ orderSummery.itemCount }},
-            deliveryCharges: {{ orderSummery.deliveryCharges }},
-        total: {{ orderSummery.total }}
-        };
-
-
-
-    $.ajax({
-        url: '/place-order',
-        method: 'POST',
-        data: { selectedAddressId, paymentMethod, couponCode, orderSummary },
-        success: function (response) {
-            if (response.success) {
-                window.location.href = '/orderSuccess';
-            } else {
-                alert('Failed to place the order. Please try again.');
-            }
-        },
-        error: function (xhr) {
-            console.error('Error placing order:', xhr);
-            const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An unknown error occurred';
-            $('#error-message').text(errorMessage || 'An error occurred. Please try again.');
-        }
-    });
-    });
+                const orderSummary = {
+                    itemCount: {{ orderSummery.itemCount }},
+                    deliveryCharges: {{ orderSummery.deliveryCharges }},
+                    total: {{ orderSummery.total }}
+                };
 
 
+                if (paymentMethod === "razorpay") {
 
-    $('#changeAddressModal').on('show.bs.modal', function () {
-        $.ajax({
-            url: '/get-addresses',
-            method: 'GET',
-            success: function (response) {
-                if (response.success) {
-                    const addresses = response.addresses[0].address;
-                    const addressListContainer = $('#addressListContainer');
-                    addressListContainer.empty();
+                    fetch('/place-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            paymentMethod: "razorpay",
+                            selectedAddressId: selectedAddressId,
+                            totalAmount: orderSummary.total,
+                            finalPrice : finalPrice,
+                            couponCode
+                        })
+                    }).then(res => res.json())
+                    .then(order => {
+                        if (order.success) {
+                            const options = {
+                                key: "{{razorpayKey}}",
+                                amount: (finalPrice)*100,
+                                currency: "INR",
+                                order_id: order.id,
+                                handler: function (response) {
+                                    // Handle payment success and verify the payment
+                                    fetch('/verify-payment', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                            razorpay_order_id: response.razorpay_order_id,
+                                            razorpay_payment_id: response.razorpay_payment_id,
+                                            razorpay_signature: response.razorpay_signature
+                                        })
 
-                    if (addresses.length > 0) {
-                        addresses.forEach((address) => {
-                            addressListContainer.append(`
-                                <div class="col-12 mb-3">
-                                    <div class="card p-3">
-                                        <h6>${address.firstName} ${address.lastName}</h6>
-                                        <p>${address.houseNo}, ${address.area}</p>
-                                        <p>${address.landmark}</p>
-                                        <p>${address.state}, ${address.pincode}</p>
-                                        <p>${address.phone}</p>
-                                        <button class="btn btn-outline-primary btn-sm selectAddressBtn" data-id="${address._id}">
-                                            Select Address
-                                        </button>
-                                    </div>
-                                </div>
-                            `);
-                        });
-                    } else {
-                        addressListContainer.append('<p>No addresses found</p>');
-                    }
-                } else {
-                    console.error('Failed to fetch addresses');
-                    alert('Failed to load addresses. Please try again.');
+                                        
+                                    }).then(res => {
+                                        return res.json()
+                                    })
+                                    .then(res => {
+                                        if (res) {
+                                            window.location.href = "/orderSuccess";
+                                        } else {
+                                            errorMessage.innerText = 'Payment verification failed.';
+                                        }
+                                    });
+                                }
+                            };
+
+                            const rzp1 = new Razorpay(options);
+                            rzp1.open();
+                        } else {
+                            errorMessage.innerText = 'Failed to create order.';
+                        }
+                    }).catch(err => {
+                        console.error('Error:', err);
+                        errorMessage.innerText = 'Error occurred while placing order.';
+                    });
+                } else if (paymentMethod === "cod") {
+                    
+                    fetch('/place-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            paymentMethod: "cod",
+                            selectedAddressId: selectedAddressId,
+                            totalAmount: orderSummary.total,
+                            finalPrice : finalPrice,
+                            couponCode
+                        })
+                    }).then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = "/orderSuccess";
+                        } else {
+                            errorMessage.innerText = 'Order placement failed.';
+                        }
+                    });
                 }
-            },
-            error: function (error) {
-                console.error('Error fetching addresses:', error);
-                alert('Failed to fetch addresses. Please try again.');
-            }
-        });
-    });
+            };
 
-    $(document).on('click', '.selectAddressBtn', function () {
-        const addressId = $(this).data('id');
-        console.log('Selected Address ID:', addressId);
-
-        $.ajax({
-            url: `/select-address/${addressId}`,
-            method: 'POST',
-            success: function (response) {
-                if (response.success) {
-                    localStorage.setItem('selectedAddressId', addressId);
-                    updateAddressDisplay(response.address);
-                    $('#changeAddressModal').modal('hide');
-                    window.location.reload()
-                } else {
-                    console.error('Failed to select address');
-                    alert('Failed to select address. Please try again.');
-                }
-            },
-            error: function (error) {
-                console.error('Error selecting address:', error);
-                alert('Failed to select the address. Please try again.');
-            }
-        });
-    });
-
-    $('#saveAddressBtn').on('click', function () {
-        const newAddress = {
-            firstName: $('#firstName').val(),
-            lastName: $('#lastName').val(),
-            phone: $('#mobileNumber').val(),
-            houseNo: $('#houseNo').val(),
-            area: $('#area').val(),
-            landmark: $('#landmark').val(),
-            state: $('#state').val(),
-            pincode: $('#pincode').val()
-        };
-
-        if (newAddress.firstName && newAddress.phone && newAddress.houseNo && newAddress.area && newAddress.state && newAddress.pincode) {
+        // Show change address modal and fetch addresses
+        $('#changeAddressModal').on('show.bs.modal', function () {
             $.ajax({
-                url: '/getAddress',
-                method: 'POST',
-                data: newAddress,
+                url: '/get-addresses',
+                method: 'GET',
                 success: function (response) {
                     if (response.success) {
-                        alert('Address saved successfully!');
-                        $('#addAddressModal').modal('hide');
-                        $('#newAddressForm')[0].reset();
-                        $('#changeAddressModal').modal('show');
-                        window.location.reload()
+                        const addresses = response.addresses[0].address;
+                        const addressListContainer = $('#addressListContainer');
+                        addressListContainer.empty();
 
+                        if (addresses.length > 0) {
+                            addresses.forEach((address) => {
+                                addressListContainer.append(`
+                                    <div class="col-12 mb-3">
+                                        <div class="card p-3">
+                                            <h6>${address.firstName} ${address.lastName}</h6>
+                                            <p>${address.houseNo}, ${address.area}</p>
+                                            <p>${address.landmark}</p>
+                                            <p>${address.state}, ${address.pincode}</p>
+                                            <p>${address.phone}</p>
+                                            <button class="btn btn-outline-primary btn-sm selectAddressBtn" data-id="${address._id}">
+                                                Select Address
+                                            </button>
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            addressListContainer.append('<p>No addresses found</p>');
+                        }
                     } else {
-                        alert('Error saving the address. Please try again.');
+                        console.error('Failed to fetch addresses');
+                        alert('Failed to load addresses. Please try again.');
                     }
                 },
                 error: function (error) {
-                    console.error('Error saving address:', error);
-                    alert('An error occurred. Please try again.');
+                    console.error('Error fetching addresses:', error);
+                    alert('Failed to fetch addresses. Please try again.');
                 }
             });
-        } else {
-            alert('Please fill in all required fields.');
-        }
-    });
+        });
 
-    // Load saved address on page load
-    const savedAddressId = localStorage.getItem('selectedAddressId');
-    if (savedAddressId) {
-        $.ajax({
-            url: `/select-address/${savedAddressId}`,
-            method: 'POST',
-            success: function (response) {
-                if (response.success) {
-                    updateAddressDisplay(response.address);
-                } else {
-                    console.error('Failed to fetch saved address');
+        // Select address functionality
+        $(document).on('click', '.selectAddressBtn', function () {
+            const addressId = $(this).data('id');
+            console.log('Selected Address ID:', addressId);
+
+            $.ajax({
+                url: `/select-address/${addressId}`,
+                method: 'POST',
+                success: function (response) {
+                    if (response.success) {
+                        localStorage.setItem('selectedAddressId', addressId);
+                        updateAddressDisplay(response.address);
+                        $('#changeAddressModal').modal('hide');
+                    } else {
+                        console.error('Failed to select address');
+                        alert('Failed to select address. Please try again.');
+                    }
+                },
+                error: function (error) {
+                    console.error('Error selecting address:', error);
+                    alert('Failed to select the address. Please try again.');
                 }
-            },
-            error: function (error) {
-                console.error('Error fetching saved address:', error);
+            });
+        });
+
+        // Save new address functionality
+        $('#saveAddressBtn').on('click', function () {
+            const newAddress = {
+                firstName: $('#firstName').val(),
+                lastName: $('#lastName').val(),
+                phone: $('#mobileNumber').val(),
+                houseNo: $('#houseNo').val(),
+                area: $('#area').val(),
+                landmark: $('#landmark').val(),
+                state: $('#state').val(),
+                pincode: $('#pincode').val()
+            };
+
+            if (newAddress.firstName && newAddress.phone && newAddress.houseNo && newAddress.area && newAddress.state && newAddress.pincode) {
+                $.ajax({
+                    url: '/getAddress',
+                    method: 'POST',
+                    data: newAddress,
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Address saved successfully!');
+                            $('#addAddressModal').modal('hide');
+                            $('#newAddressForm')[0].reset();
+                            $('#changeAddressModal').modal('show');
+                        } else {
+                            alert('Error saving the address. Please try again.');
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error saving address:', error);
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            } else {
+                alert('Please fill in all required fields.');
             }
         });
-    }
-});
+
+        // Load saved address on page load
+        const savedAddressId = localStorage.getItem('selectedAddressId');
+        if (savedAddressId) {
+            $.ajax({
+                url: `/select-address/${savedAddressId}`,
+                method: 'POST',
+                success: function (response) {
+                    if (response.success) {
+                        updateAddressDisplay(response.address);
+                    } else {
+                        console.error('Failed to fetch saved address');
+                    }
+                },
+                error: function (error) {
+                    console.error('Error fetching saved address:', error);
+                }
+            });
+        }
+
+
+        document.getElementById('apply-coupon').addEventListener('click', function(){
+            const couponCode = document.getElementById('couponCode').value
+            if(!couponCode){
+                document.getElementById('couponCode').textContent = 'Please enter a coupon code'
+                return
+            }
+            console.log(couponCode)
+
+            fetch('/applyCoupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({couponCode})
+            })
+            .then(response => response.json())
+            .then(data =>{
+                if(data.success){
+                    Swal.fire({
+                        title: 'Coupon Applied!',
+                        text: `New price: ₹${data.discountedPrice}`,
+                        icon: 'success',
+                        confirmButtonText: 'Okay'
+                    });
+                    document.getElementById('order-total').textContent = `₹${data.finalAmount}`;
+                    document.getElementById('coupon-discount').textContent = `₹${data.discount}`
+                    document.getElementById('return-message').textContent = `${data.message}`
+                    document.getElementById('coupon-discount').textContent = `${data.percentage}%`
+                }else{
+                    Swal.fire({
+                        title : 'Error in Applying Coupon',
+                        text: 'There is an error occured in applying coupon ',
+                        icon: 'error',
+                        confirmButtonText : 'Okay'
+                    })
+                }
+            })
+            .catch(error =>{
+                console.log('Error:', error)
+                document.getElementById('coupon-message').textContent = 'There was an error applying the coupon.'
+            })
+        })
+
+
+
+    });
 </script>

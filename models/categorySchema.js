@@ -14,13 +14,13 @@ const categorySchema =({
         enum:['brand','type'],
         required:true
     },
+    brandOffer:{
+        type:Number,
+        default:0
+    },
     isListed:{
         type: Boolean,
         default: true
-    },
-    categoryOffer:{
-        type:Number,
-        default:0
     },
     createdAt:{
         type: Date,

@@ -2,7 +2,6 @@ const Product = require('../../models/productSchema')
 const Category = require('../../models/categorySchema')
 const User = require('../../models/userSchema')
 
-
 const getProduct = async (req, res) => {
     try {
         const user = req.session.user
@@ -14,13 +13,15 @@ const getProduct = async (req, res) => {
                 _id:productId,
                 isBlocked: false,
             })
-            
+
             const related = await Product.find({ isBlocked: false, _id: { $ne: productId } }).limit(6);
+            const wishlist = userData.wishlist.includes(productId)
 
             res.render("user/product", {
                 userData,
                 products,
-                related
+                related,
+                wishlist
             })
         } else {
             const products = await Product.findOne({

@@ -102,6 +102,7 @@
 
 <div class="container py-4">
     <h1 class="mb-4">Your Cart</h1>
+    {{#if cartItems.length}}
     {{#each cartItems}}
     <div class="cart-item" data-product-id="{{this.productId._id}}">
         <div class="product-image">
@@ -124,6 +125,7 @@
                     <input type="text" value="{{this.quantity}}" readonly>
                     <button class="btn btn-outline-secondary">+</button>
                 </div>
+                <div id="error-message" style="color: red;"></div>
                 {{#if this.productId.isBlocked}}
                 <p style="color: red;">Product Unavailable</p>
                 {{else}}
@@ -137,6 +139,9 @@
         </div>
     </div>
     {{/each}}
+    {{else}}
+    <p>Your cart is empty!</p>
+    {{/if}}
 
     <!-- Cart Summary with total price and checkout button -->
     <div class="cart-summary">
@@ -144,7 +149,9 @@
             <h4>Total Amount: ₹{{userCart.totalPrice}}</h4>
         </div>
         <div class="checkout-button">
-            <a href="/checkoutPage" class="btn btn-primary">Proceed to Checkout</a>
+            <a href="/checkoutPage" class="btn btn-primary {{#unless cartItems.length}}disabled{{/unless}}">
+                Proceed to Checkout
+            </a>
         </div>
     </div>
 
@@ -159,43 +166,46 @@
 
 <script>
 
-    $(document).on('click', '.quantity-controls button', function () {
-        const action = $(this).text() === '+' ? 'increment' : 'decrement';
-        const productId = $(this).closest('.cart-item').data("product-id");
+    $(document).ready(function () {
 
-        console.log("Button clicked");
-        console.log("Product ID:", productId);
+        $(document).on('click', '.quantity-controls button', function () {
+            const action = $(this).text() === '+' ? 'increment' : 'decrement';
+            const productId = $(this).closest('.cart-item').data("product-id");
 
-        $.ajax({
-            url: '/updateQuantity',
-            method: 'POST',
-            data: { productId, action },
-            success: function (response) {
-                location.reload();
-            },
-            error: function (error) {
-                console.error(error);
-            }
+            $.ajax({
+                url: '/updateQuantity',
+                method: 'POST',
+                data: { productId, action },
+                success: function (response) {
+                    window.location.reload();
+                    document.getElementById('error-message').textContent = `${response.message}`
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
         });
-    });
 
-    $('.delete-btn').on('click', function () {
-        const productId = $(this).closest('.cart-item').data('product-id');
+        $('.delete-btn').on('click', function () {
+            const productId = $(this).closest('.cart-item').data('product-id');
 
-        $.ajax({
-            url: '/removeItem',
-            method: 'POST',
-            data: { productId },
-            success: function (response) {
-                $(`[data-product-id='${productId}']`).remove();
+            $.ajax({
+                url: '/removeItem',
+                method: 'POST',
+                data: { productId },
+                success: function (response) {
+                    $(`[data-product-id='${productId}']`).remove();
 
-                const newTotalPrice = response.newTotalPrice;
-                $('.total-amount h4').text(`Total Amount: ₹${newTotalPrice}`);
-            },
-            error: function (error) {
-                console.log(error);
-            }
+                    const newTotalPrice = response.newTotalPrice;
+                    $('.total-amount h4').text(`Total Amount: ₹${newTotalPrice}`);
+                    window.location.reload()
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
         });
+
     });
 
 </script>
