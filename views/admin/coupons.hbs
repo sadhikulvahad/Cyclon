@@ -199,11 +199,41 @@
                     expiryDate: $('#expiryDate').val(),
                 };
 
+                if(newCoupon.discount <=0 || newCoupon.discount >= 100){
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Invalid input",
+                        text: "coupon offer must be between 100 and 0."
+                    });
+                    return;
+                }
+
+                if(newCoupon.minAmount > newCoupon.maxAmount){
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Invalid input",
+                        text: "Min amound never be greater than Max amount."
+                    });
+                    return;
+                }
+
                 if (!newCoupon.code || isNaN(newCoupon.discount) || isNaN(newCoupon.minAmount) || isNaN(newCoupon.maxAmount)) {
                     Swal.fire({
                         icon: "warning",
                         title: "Invalid input",
                         text: "Please fill out all the fields correctly."
+                    });
+                    return;
+                }
+
+                const currentDate = new Date();
+                const expiryDate = new Date(newCoupon.expiryDate);
+
+                if (expiryDate <= currentDate) {
+                    Swal.fire({
+                    icon: "warning",
+                    title: "Invalid input",
+                    text: "Expiry date must be in the future."
                     });
                     return;
                 }
@@ -218,14 +248,28 @@
                     .then(response => response.json())
                     .then(data => {
                         $('#addCouponModal').modal('hide');
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Coupon Added',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            location.reload();
-                        });
+                        if(data.success){
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Coupon Added',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                        
                     })
                     .catch(err => {
                         Swal.fire({

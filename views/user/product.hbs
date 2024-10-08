@@ -83,11 +83,12 @@
 
             <div class="wishlist-icon-wrapper">
                 {{#if wishlist}}
-                <button type="button" id="wishlistBtn" style="border: none; background:none"><i class="fa-solid fa-heart wishlist-btn" style="color:red;"
+                <button type="button" id="wishlistBtn" style="border: none; background:none"><i
+                        class="fa-solid fa-heart wishlist-btn" style="color:red;"
                         data-product-id="{{products._id}}"></i></button>
                 {{else}}
-                <button type="button" id="wishlistBtn" style="border: none; background:none"><i class="fas fa-heart wishlist-btn"
-                        data-product-id="{{products._id}}"></i></button>
+                <button type="button" id="wishlistBtn" style="border: none; background:none"><i
+                        class="fas fa-heart wishlist-btn" data-product-id="{{products._id}}"></i></button>
                 {{/if}}
             </div>
 
@@ -103,7 +104,11 @@
 
             <div class="pricing mt-3">
                 <h4 class="text-danger">₹{{products.salePrice}}</h4>
-                <span class="text-muted"><span>{{offer}}%</span><del>M.R.P:₹{{products.regularPrice}}</del></span>
+                <span class="text-muted">
+                    {{#if (gt (maxOffer products.productOffer products.brandOffer) 0)}}
+                    <span style="color: red;">{{maxOffer products.productOffer products.brandOffer}}%Off</span>
+                    {{/if}}
+                    <del>M.R.P:₹{{products.regularPrice}}</del></span>
                 {{#if products.quantity}}
                 <p style="color: green;">In stock</p>
                 {{else}}
@@ -188,7 +193,7 @@
         lens.style.position = "absolute";
         lens.style.border = "1px solid #000";
         lens.style.cursor = "none";
-        lens.style.borderRadius = '7.5px'
+        lens.style.borderRadius = '7.5px';
 
         container.addEventListener('mousemove', moveLens);
         container.addEventListener('mouseleave', () => {
@@ -223,22 +228,22 @@
             };
         }
 
+        // Wishlist button functionality
         document.getElementById('wishlistBtn').addEventListener('click', function () {
             const wishlistIcon = this.querySelector('.wishlist-btn');
             const productId = this.querySelector('.wishlist-btn').getAttribute('data-product-id');
-            const isActive = this.querySelector('.wishlist-btn').classList.contains('active');
 
             fetch("/addWishlist", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({productId })
+                body: JSON.stringify({ productId })
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload()
+                        window.location.reload();
                     } else {
                         console.error('Error:', data.message);
                     }
@@ -248,6 +253,16 @@
                 });
         });
 
+        // Image switch functionality for sub-images
+        const thumbnails = document.querySelectorAll('.img-thumbnail');
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', function () {
+                img.src = this.src;
 
+                // Adjust magnifier lens based on the new image
+                lens.style.backgroundImage = "url('" + img.src + "')";
+            });
+        });
     });
+
 </script>*

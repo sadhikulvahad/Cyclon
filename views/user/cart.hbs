@@ -118,14 +118,14 @@
                 <p style="color: red;">Out of Stock</p>
                 {{/if}}
                 <p><span class="fw-semibold">Price:</span><strong>₹{{this.price}}</strong></p>
-                <p class="text-mute">Free Delivery Mon, <b>12 sep</b></p>
+                <p class="text-mute">Free Delivery Mon, <b>12 oct</b></p>
                 <div class="quantity-controls">
                     <p class="fw-semibold">Quantity:</p>
                     <button class="btn btn-outline-secondary">-</button>
-                    <input type="text" value="{{this.quantity}}" readonly>
+                    <input type="text" id="quantity-{{this.productId._id}}" value="{{this.quantity}}" readonly>
                     <button class="btn btn-outline-secondary">+</button>
                 </div>
-                <div id="error-message" style="color: red;"></div>
+                <div id="error-message-{{this.productId._id}}" style="color: red;"></div>
                 {{#if this.productId.isBlocked}}
                 <p style="color: red;">Product Unavailable</p>
                 {{else}}
@@ -133,7 +133,6 @@
                 {{/if}}
             </div>
             <div class="action-buttons">
-                <button class="btn btn-warning wishlist-btn">Add to Wishlist</button>
                 <button class="btn btn-danger delete-btn">Remove item</button>
             </div>
         </div>
@@ -146,10 +145,16 @@
     <!-- Cart Summary with total price and checkout button -->
     <div class="cart-summary">
         <div class="total-amount">
-            <h4>Total Amount: ₹{{userCart.totalPrice}}</h4>
+            <span style="font-size: x-large;"><strong>Total Amount</strong>: <span id="totalPrice"
+                    style="font-size: x-large;"><strong>₹{{userCart.totalPrice}}</strong></span></span>
         </div>
         <div class="checkout-button">
-            <a href="/checkoutPage" class="btn btn-primary {{#unless cartItems.length}}disabled{{/unless}}">
+            <a href="/checkoutPage" class="btn btn-primary 
+               {{#unless cartItems.length}}disabled{{/unless}} 
+               {{#each cartItems}} 
+                 {{#if this.productId.isBlocked}}disabled{{/if}} 
+                 {{#unless this.productId.quantity}}disabled{{/unless}} 
+               {{/each}}">
                 Proceed to Checkout
             </a>
         </div>
@@ -172,13 +177,19 @@
             const action = $(this).text() === '+' ? 'increment' : 'decrement';
             const productId = $(this).closest('.cart-item').data("product-id");
 
+
             $.ajax({
                 url: '/updateQuantity',
                 method: 'POST',
                 data: { productId, action },
                 success: function (response) {
-                    window.location.reload();
-                    document.getElementById('error-message').textContent = `${response.message}`
+                    if (response.success) {
+                        document.getElementById(`quantity-${productId}`).value = `${response.quantity}`
+                        document.getElementById('totalPrice').textContent = `₹${response.totalAmount}`
+                    }
+                    if (response.error) {
+                        document.getElementById(`error-message-${productId}`).textContent = `${response.error}`
+                    }
                 },
                 error: function (error) {
                     console.error(error);

@@ -24,7 +24,7 @@ const getProductAdd = async (req, res) => {
 const calculateSalePrice = (regularPrice, productOffer, brandOffer) => {
     const greatestOffer = Math.max(productOffer, brandOffer || 0);
     const salePrice = regularPrice - (regularPrice * greatestOffer / 100);
-    return salePrice;
+    return Math.round(salePrice);
 };
 
 
@@ -134,66 +134,70 @@ const getEditProduct = async (req, res) => {
 }
 
 const editProduct = async (req, res) => {
-
-    try {
-        console.log(req.body)
-        const { productId, productName, brand, category, description, regularPrice, quantity, color, brakeStyle, numberOfGears } = req.body;
-
-        if (!productId || !productName || !brand || !category || !description || !regularPrice || !quantity || !color || !brakeStyle || !numberOfGears) {
-            return res.status(400).json({ error: "All fields are required" });
+    upload(req, res, async (err) => {
+        if (err) {
+            console.error("Multer error:", err);
+            return res.status(400).json({ success: false, error: 'File upload error' });
         }
 
-        if (!productName || !brand || !category) {
-            console.error('Missing required product details');
-            return res.render('admin/addProduct', { error: 'Missing required product details' });
+        try {
+            const { productId, productName, brand, category, description, regularPrice, quantity, color, brakeStyle, numberOfGears } = req.body;
+
+            if (!productId || !productName || !brand || !category || !description || !regularPrice || !quantity || !color || !brakeStyle || !numberOfGears) {
+                return res.status(400).json({ error: "All fields are required" });
+            }
+
+            if (quantity <= 0 || regularPrice <= 0 ){
+                return res.status(400).json({error: "Numbers Must be greater than 0"})
+            }
+
+            const product = await Product.findById(productId);
+            if (!product) {
+                return res.status(404).json({ error: "Product not found" });
+            }
+
+            const brandData = await Category.findOne({ categoryType: "brand", name: brand });
+            const salePrice = calculateSalePrice(regularPrice, product.productOffer, brandData.brandOffer);
+
+            // Process images
+            let updatedImages = [];
+            for (let i = 1; i <= 4; i++) {
+                if (req.body[`image${i}IsNew`] === 'true' && req.files[`image${i}`]) {
+                    const file = req.files[`image${i}`][0];
+                    const filename = `${Date.now()}-${file.originalname}`;
+                    const outputPath = path.join(__dirname, '../../uploads/resized', filename);
+
+                    await sharp(file.buffer)
+                        .resize(300, 300)
+                        .toFile(outputPath);
+                    updatedImages.push(filename);
+                } else if (req.body[`image${i}Existing`]) {
+                    updatedImages.push(req.body[`image${i}Existing`]);
+                }
+            }
+
+            // Update product fields
+            product.productName = productName;
+            product.brand = brand;
+            product.category = category;
+            product.description = description;
+            product.regularPrice = regularPrice;
+            product.salePrice = salePrice;
+            product.quantity = quantity;
+            product.color = color;
+            product.brakeStyle = brakeStyle;
+            product.numberOfGears = numberOfGears;
+            product.productImages = updatedImages;
+
+            await product.save();
+
+            return res.json({ message: 'Product updated successfully' });
+
+        } catch (error) {
+            console.error('Server Error:', error.message);
+            return res.status(500).json({ error: "Internal server error" });
         }
-
-        if (quantity < 0 || regularPrice < 0) {
-            return res.status(400).json({ success: false, error: 'Numbers must be greater than zero' })
-        }
-
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ error: "Product not found" });
-        }
-
-        const brandData = await Category.findOne({ categoryType: "brand", name: brand })
-        console.log(brandData.brandOffer)
-
-        const salePrice = calculateSalePrice(regularPrice, product.productOffer, brandData.brandOffer)
-
-        const normalizedProductName = productName.trim().toLowerCase();
-
-        const existingProduct = await Product.findOne({
-            name: { $regex: new RegExp('^' + normalizedProductName + '$', 'i') },
-            category,
-            _id: { $ne: productId }
-        });
-
-        if (existingProduct) {
-            return res.status(400).json({ error: "Product with the same name already exists in this category" });
-        }
-
-        product.productName = productName;
-        product.brand = brand;
-        product.category = category;
-        product.description = description;
-        product.regularPrice = regularPrice;
-        product.salePrice = salePrice
-        product.quantity = quantity;
-        product.color = color;
-        product.brakeStyle = brakeStyle;
-        product.numberOfGears = numberOfGears;
-
-        await product.save();
-        console.log("success")
-
-        return res.json({ message: 'Product updated successfully' });
-
-    } catch (error) {
-        console.error('Server Error:', error.message);
-        return res.status(500).json({ error: "Internal server error" });
-    }
+    });
 };
 
 
@@ -253,9 +257,31 @@ const removeOffer = async (req, res) => {
     try {
         const { offerType, offerId } = req.body
         if (offerType === "product") {
-            const product = await Product.findByIdAndUpdate(offerId, { productOffer: 0 })
+
+            const product = await Product.findById(offerId);
+            if (!product) return res.status(404).json({ error: "Product not found" });
+
+            const brand = await Category.findOne({ categoryType: "brand", name: product.brand });
+            const brandOffer = brand ? brand.brandOffer : 0;
+
+            const salePrice = calculateSalePrice(product.regularPrice, 0, brandOffer);
+
+            product.productOffer = 0;
+            product.salePrice = salePrice;
+            await product.save();
         } else if (offerType === "brand") {
-            const brand = await Category.findByIdAndUpdate(offerId, { brandOffer: 0 })
+
+            const brand = await Category.findByIdAndUpdate(offerId, { brandOffer: 0 }, { new: true });
+            if (!brand) return res.status(404).json({ error: "Brand not found" });
+
+            const products = await Product.find({ brand: brand.name });
+            for (let product of products) {
+                const productOffer = product.productOffer || 0;
+                const salePrice = calculateSalePrice(product.regularPrice, productOffer, 0);
+
+                product.salePrice = salePrice;
+                await product.save();
+            }
         }
 
         res.json({ success: true, message: `${offerType} offer added successfully` })
@@ -267,30 +293,30 @@ const removeOffer = async (req, res) => {
 }
 
 
-const getCoupon = async (req,res)=>{
+const getCoupon = async (req, res) => {
     try {
         const coupons = await Coupon.find()
-        res.render("admin/coupons",{coupons})
+        res.render("admin/coupons", { coupons })
     } catch (error) {
         console.error('Server Error:', error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
 
-const addCoupon = async (req,res)=>{
+const addCoupon = async (req, res) => {
     try {
-        const {code, discount, minAmount, maxAmount, expiryDate} = req.body
+        const { code, discount, minAmount, maxAmount, expiryDate } = req.body
 
-        const existingCode = await Coupon.findOne({code:code})
+        const existingCode = await Coupon.findOne({ code: code })
 
-        if(existingCode){
-            return res.status(400).json({ error: "This code is already taken" });
+        if (existingCode) {
+            return res.status(400).json({success:false, message: "This code is already taken" });
         }
 
         const coupon = new Coupon({
             code: code,
-            couponOffer:discount,
-            minAmount:minAmount,
+            couponOffer: discount,
+            minAmount: minAmount,
             maxAmount: maxAmount,
             expireOn: expiryDate,
         })
@@ -301,25 +327,24 @@ const addCoupon = async (req,res)=>{
 
     } catch (error) {
         console.error('Server Error:', error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({success: false, message: "Internal server error" });
     }
 }
 
 
-const editCoupon = async (req,res)=>{
+const editCoupon = async (req, res) => {
     try {
-        const {id, code, discount, minAmount, maxAmount, expiryDate} = req.body
+        const { id, code, discount, minAmount, maxAmount, expiryDate } = req.body
 
-        const coupon = await Coupon.updateOne({_id:id},{
-            $set:{
+        const coupon = await Coupon.updateOne({ _id: id }, {
+            $set: {
                 code: code,
                 couponOffer: discount,
-                minAmount : minAmount,
-                maxAmount : maxAmount,
-                expireOn : expiryDate
+                minAmount: minAmount,
+                maxAmount: maxAmount,
+                expireOn: expiryDate
             }
         })
-        console.log(coupon)
 
         res.status(200).json({ success: true, message: 'Coupon updated successfully' });
     } catch (error) {
@@ -327,10 +352,10 @@ const editCoupon = async (req,res)=>{
     }
 }
 
-const deleteCoupon = async (req,res)=>{
+const deleteCoupon = async (req, res) => {
     try {
         const id = req.params.id
-        await Coupon.deleteOne({_id:id})
+        await Coupon.deleteOne({ _id: id })
         res.status(200).json({ success: true, message: 'Coupon deleted successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to delete coupon' });

@@ -25,6 +25,35 @@
     .table thead th {
         background-color: #f8f9fa;
     }
+
+    .shipping-payment-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .order-summary {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .shipping-address {
+        width: 55rem;
+        background-color: #e7f3ff;
+    }
+
+    .payment-details {
+        width: 23rem;
+        background-color: #fff3e0;
+    }
+
+    .continue-payment-btn {
+        color: white;
+        margin-top: -40px;
+        position: absolute;
+    }
 </style>
 
 
@@ -33,25 +62,61 @@
 <div class="container mt-5">
 
     <!-- Order ID and Title -->
-    <h6 class="mb-4">Order #{{order.orderId}}</h6>
+    <div class="d-flex justify-content-between align-items-center mb-3" style="font-weight: 500;">
+        <span>
+            Ordered On : {{formatDate order.createdOn}} | Order Id : {{order.orderId}}
+        </span>
+        {{#if (eq order.status "delivered")}}<a href="/download-invoice/{{order.orderId}}" class="ml-3"
+            style="text-decoration: none !important;">Download
+            Invoice <i class="fa-solid fa-chevron-down"></i></a>{{/if}}
+    </div>
 
-    <div class="shipping-payment-section">
-        <div class="order-summary">
+
+    <div class="shipping-payment-section border-1">
+        <div class="order-summary shipping-address">
             <h4>Shipping Address</h4><br>
-            <p class="mb-0"><strong> Name : {{address.[0].firstName}} {{address.[0].lastName}}</strong></p>
-            <p class="mb-0"> <strong>house No :</strong> {{address.[0].houseNo}}, <strong> Area :</strong>
+            <p class="mb-1" style="font-weight:500;"> Name : {{address.[0].firstName}} {{address.[0].lastName}}</p>
+            <p class="mb-1" style="font-weight:500;">HouseNo : {{address.[0].houseNo}} <br> Area :
                 {{address.[0].area}}</p>
-            <p class="mb-0"> <strong>Landmark :</strong> {{address.[0].landmark}}</p>
-            <p class="mb-0"><strong>State :</strong> {{address.[0].state}}, PinCode: {{address.[0].pincode}}</p>
+            <p class="mb-1" style="font-weight:500;"> Landmark : {{address.[0].landmark}}</p>
+            <p class="mb-1" style="font-weight:500;">State : {{address.[0].state}}, PinCode: {{address.[0].pincode}}</p>
         </div>
 
-        <div class="order-summary">
-            <h5>Payment Method : <strong>{{#if (eq order.paymentMethod "razorpay")}} RazorPay {{else}} Cash On Delivery
-                    {{/if}}</strong></h5>
-            <p><strong>Order Status :</strong>{{order.status}}</p><br><br>
-            <p>Total:<strong> ₹{{order.totalPrice}}</strong></p>
+        <div class="order-summary payment-details p-3 border rounded bg-light">
+            <h4 class="mb-0">Order Summary :</h4><br>
+            <h6>Payment Method:{{#if (eq order.paymentMethod "razorpay")}}RazorPay{{else if (eq order.paymentMethod
+                "wallet")}}Wallet{{else}}Cash On Delivery{{/if}}</h6>
+            </h6>
+            {{#if (eq order.paymentStatus "success")}}
+            <span>Payment Status : <span style="color: green;">Success</span></span>
+            {{else}}
+            <span>Payment Status : <span style="color: red;">Failed</span></span>
+            {{/if}}
+            <p class="{{#if (eq order.status 'returned')}}text-danger{{/if}}">
+                Order Status : {{order.status}}
+            </p>
+
+
+            <div class="d-flex justify-content-between">
+                <span>Item(s) Subtotal:</span>
+                <span>₹{{subTotal}}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Shipping charge:</span>
+                <span>₹50</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Price:</span>
+                <span>₹{{order.finalPrice}}</span>
+            </div>
         </div>
     </div>
+    {{#if (eq order.paymentStatus "failed")}}
+    <div class="d-flex justify-content-end ">
+        <button id="retryButton" style="color: white;" class=" btn btn-success continue-payment-btn">continue
+            payment</button>
+    </div>
+    {{/if}}
 
     <h4>Items Ordered</h4>
     <div class="table-responsive">
@@ -134,8 +199,9 @@
 </div>
 
 
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
 
@@ -179,7 +245,113 @@
                     });
             }
         });
-    });
+
+
+
+        document.getElementById('retryButton').addEventListener('click', function () {
+            const orderId = "{{order.orderId}}"; // Handlebars template variable
+            const finalPriceString = '{{ order.finalPrice }}'; // Handlebars template variable
+            const finalPrice = Number(finalPriceString)
+
+            fetch(`/retryPayment/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(res => res.json())
+                .then(order => {
+                    if (order.success) {
+                        const orderId = order.orderId
+                        const options = {
+                            key: order.razorpayKey,
+                            amount: (finalPrice) * 100,
+                            currency: "INR",
+                            order_id: order.id,
+                            handler: function (response) {
+                                fetch('/verify-payment', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_signature: response.razorpay_signature
+                                    })
+
+
+                                }).then(res => {
+                                    return res.json()
+                                })
+                                    .then(res => {
+                                        if (res) {
+                                            window.location.href = `/orderSuccess/${orderId}`;
+                                        } else {
+                                            showError('Payment verification failed.');
+                                            updatePaymentStatus(orderId, 'failed')
+                                        }
+                                    }).catch(err => {
+                                        console.error('Verification Error:', err);
+                                        showError('Error occurred while verifying payment.');
+                                        updatePaymentStatus(orderId, 'failed')
+                                    })
+                            },
+                            modal: {
+                                ondismiss: function () {
+                                    // Handle modal close
+                                    showError('Payment process was cancelled.');
+                                    updatePaymentStatus(orderId, 'failed')
+                                }
+                            }
+                        };
+
+                        const rzp1 = new Razorpay(options);
+                        rzp1.open(); // Open the Razorpay modal
+                    } else {
+                        showError('Failed to initiate retry payment. Razorpay Order ID missing.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showError('Error occurred while retrying payment: ' + err.message);
+                });
+        });
+    })
+
+
+    function showError(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: message,
+        });
+    }
+
+
+    function updatePaymentStatus(orderId, status) {
+        console.log('asdjhkfgkjh')
+        fetch('/updatePaymentStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                orderId: orderId,
+                status: status
+            })
+        }).then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Payment status updated to:', status);
+                } else {
+                    console.error('Failed to update payment status:', data.message);
+                }
+            }).catch(err => {
+                console.error('Error updating payment status:', err);
+            });
+    }
+
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirmReturnBtn').addEventListener('click', function () {

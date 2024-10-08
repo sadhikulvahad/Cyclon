@@ -10,7 +10,7 @@ const getProduct = async (req, res) => {
             const userData = await User.findOne({ _id: user })
 
             const products = await Product.findOne({
-                _id:productId,
+                _id: productId,
                 isBlocked: false,
             })
 
@@ -25,14 +25,26 @@ const getProduct = async (req, res) => {
             })
         } else {
             const products = await Product.findOne({
-                _id:productId,
+                _id: productId,
                 isBlocked: false,
             })
 
+
+            const productObj = products.toObject();
+
+            const brandOfferData = await Category.find({ name: productObj.brand });
+            let brandOfferValue = 0;
+
+            if (brandOfferData.length > 0 && brandOfferData[0].brandOffer !== undefined) {
+                brandOfferValue = brandOfferData[0].brandOffer;
+            }
+
+            productObj.brandOffer = brandOfferValue;
+            console.log(productObj);
             const related = await Product.find({ isBlocked: false, _id: { $ne: productId } }).limit(6);
 
             res.render("user/product", {
-                products,
+                products:productObj,
                 related
             })
         }

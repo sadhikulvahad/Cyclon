@@ -11,68 +11,57 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            justify-content: space-between;
         }
 
-        .product-image img {
-            max-width: 150px;
+        .wishlist-item .product-image {
+            flex: 0 0 150px;
+            margin-right: 15px;
+        }
+
+        .wishlist-item .product-image img {
+            max-width: 100%;
             height: auto;
             border-radius: 8px;
         }
 
-        .product-image {
-            padding: 5px;
+        .wishlist-item .product-info {
+            flex: 1;
         }
 
         h2 {
             font-size: 1.15rem;
-            margin-bottom: 3px;
+            margin-bottom: 6px;
         }
 
         p.text-muted {
             font-size: 0.75rem;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
 
         p.text-danger {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
 
         h3 {
             font-size: 1.1rem;
         }
 
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            width: fit-content;
-        }
-
-        .quantity-selector button {
-            background: none;
-            border: none;
-            padding: 2px 5px;
-            font-size: 12px;
-        }
-
-        .quantity-selector input {
-            width: 30px;
-            text-align: center;
-            border: none;
-            border-left: 1px solid #ddd;
-            border-right: 1px solid #ddd;
-            padding: 2px;
-            font-size: 12px;
+        .price-info span {
+            font-size: 0.9rem;
+            margin-right: 10px;
         }
 
         .btn {
-            padding: 3px 8px;
-            font-size: 0.8rem;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        .action-buttons {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -83,21 +72,30 @@
         {{#if wishlist}}
         {{#each wishlist}}
         <div class="wishlist-item">
-            <div class="col-md-3 product-image">
-                <img src="/uploads/resized/{{this.productImages.[0]}}" alt="{{this.productImages}}" class="img-fluid">
+            <div class="product-image">
+                <a href="/product/{{_id}}">
+                    <img src="/uploads/resized/{{this.productImages.[0]}}" alt="{{this.productImages}}">
+                </a>
             </div>
-            <div class="col-md-9">
-                <h2 class="mb-1">{{this.productName}}</h2>
+            <div class="product-info">
+                <a href="/product/{{_id}}" class="text-decoration-none text-dark">
+                    <h2>{{this.productName}}</h2>
+                </a>
                 <p class="text-muted">{{this.description}}</p>
+
                 {{#if this.outOfStock}}
                 <p class="text-danger">Out of Stock</p>
                 {{/if}}
-                <span class="text-muted"><span style="color: red;"
-                        class="mb-0">{{this.productOffer}}%</span><del>M.R.P:₹{{this.regularPrice}}</del></span>
-                <h3 class="text-primary mb-1">₹{{this.salePrice}}</h3>
-                <p class="text-muted">Free Delivery {{this.deliveryDate}}</p>
 
-                <div class="mt-2 d-flex justify-content-start">
+                <div class="price-info">
+                    <span style="color: red;">{{this.productOffer}}% OFF</span>
+                    <span class="text-muted"><del>M.R.P: ₹{{this.regularPrice}}</del></span>
+                    <h3 class="text-primary mb-1">₹{{this.salePrice}}</h3>
+                </div>
+
+                <p class="text-muted">Free Delivery by {{this.deliveryDate}}</p>
+
+                <div class="action-buttons d-flex">
                     <form action="/addToCart" method="POST" class="me-2">
                         <input type="hidden" name="productId" value="{{this._id}}">
                         <button type="submit" class="btn btn-primary">Add to Cart</button>
@@ -105,7 +103,6 @@
                     <button class="btn btn-danger wishlist-btn" type="button" data-product-id="{{this._id}}">Remove
                         item</button>
                 </div>
-
             </div>
         </div>
         {{/each}}
@@ -115,15 +112,12 @@
     </div>
 
     <script>
-
         document.addEventListener('DOMContentLoaded', function () {
-            // Attach event listener for all wishlist buttons using event delegation
             document.body.addEventListener('click', function (event) {
                 if (event.target && event.target.classList.contains('wishlist-btn')) {
                     const productId = event.target.getAttribute('data-product-id');
                     console.log(productId)
 
-                    // Fetch request to remove item from wishlist
                     fetch("/addWishlist", {
                         method: 'POST',
                         headers: {
@@ -134,7 +128,7 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                window.location.reload(); // Reload the page to reflect changes
+                                window.location.reload();
                             } else {
                                 console.error('Error:', data.message);
                             }

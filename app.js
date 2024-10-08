@@ -39,6 +39,19 @@ hbs.registerHelper('increment', function(value) {
   return parseInt(value) + 1;
 });
 
+hbs.registerHelper('maxOffer', function(productOffer, brandOffer){
+  return Math.max(productOffer, brandOffer)
+})
+
+hbs.registerHelper('gt', function (value1, value2) {
+  return value1 > value2;
+});
+
+hbs.registerHelper('or', function(arg1, arg2) {
+  return arg1 || arg2;
+});
+
+
 app.set('view engine', 'hbs');
 
 app.use(logger('dev'));

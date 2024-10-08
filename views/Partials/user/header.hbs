@@ -27,22 +27,22 @@
             font-size: 1.5rem;
         }
 
-        .navbar-nav .nav-link img {
-            margin-left: 10px;
+        .search-input {
+            width: 300px; /* Adjust width as needed */
+            height: 40px;
+            padding: 10px;
         }
 
-        .form-control {
-            margin-right: 10px;
+        .search-button {
+            height: 40px;
+            padding: 10px 20px;
         }
 
-        .navbar {
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        .container-fluid {
+        /* Additional styling to center the search bar */
+        .search-container {
             display: flex;
-            align-items: center;
+            justify-content: center;
+            flex-grow: 1; /* Allow it to take available space */
         }
     </style>
 </head>
@@ -53,38 +53,42 @@
             <a class="navbar-brand" href="/">
                 <img src="/images/Logo.png" alt="Cyclon Logo" width="150" height="50" class="d-inline-block align-top">
             </a>
-            <form class="form-inline my-2 my-lg-0" action="/shop" method="GET">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="search"
-                    value="{{search}}">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
-            <div class="navbar-nav ms-auto">
-                {{#if userData}}
-                <!-- User logged in -->
-                <div class="dropdown">
-                    <button data-bs-toggle="dropdown" class="border-0 bg-transparent">
-                        <i class="bi bi-person fs-2"></i>
-                    </button>
-                    <ul class="dropdown-menu" style="z-index: 1000;">
-                        <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                        <li><a class="dropdown-item" href="/orders">Orders</a></li>
-                        <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
-                        <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
-                        <li><a class="dropdown-item" href="/coupons">Coupons</a></li>
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                data-bs-target="#logoutModal">Logout</a></li>
-                    </ul>
+            <div class="collapse navbar-collapse d-flex">
+                <div class="search-container">
+                    <form class="d-flex" action="/shop" method="GET">
+                        <input class="form-control me-2 search-input" type="search" placeholder="Search" aria-label="Search"
+                            name="search" value="{{search}}">
+                        <button class="btn btn-outline-success search-button" type="submit">Search</button>
+                    </form>
                 </div>
-                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
-                <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
 
-                {{else}}
-                <!-- User not logged in -->
-                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
-                <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
-                <a class="nav-link" href="/login">Login</a>
-                <a class="nav-link" href="/signup">Signup</a>
-                {{/if}}
+                <div class="navbar-nav">
+                    {{#if userData}}
+                    <!-- User logged in -->
+                    <div class="dropdown">
+                        <button data-bs-toggle="dropdown" class="border-0 bg-transparent">
+                            <i class="bi bi-person fs-2"></i>
+                        </button>
+                        <ul class="dropdown-menu" style="z-index: 1000;">
+                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/orders">Orders</a></li>
+                            <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
+                            <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
+                            <li><a class="dropdown-item" href="/coupons">Coupons</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                        </ul>
+                    </div>
+                    <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
+                    <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
+
+                    {{else}}
+                    <!-- User not logged in -->
+                    <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
+                    <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
+                    <a class="nav-link" href="/login">Login</a>
+                    <a class="nav-link" href="/signup">Signup</a>
+                    {{/if}}
+                </div>
             </div>
         </div>
     </nav>

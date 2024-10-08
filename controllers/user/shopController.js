@@ -8,7 +8,6 @@ const getProduct = async (req, res) => {
     try {
         const user = req.session.user
         let search = req.query.search || ""
-        console.log(search)
         if (user) {
             const userData = await User.findOne({ _id: user })
             const brand = await Category.find({ categoryType: "brand", isListed: true })
@@ -65,6 +64,21 @@ const getProduct = async (req, res) => {
 
             const count = await Product.countDocuments(filterCriteria)
             const totalPages = Math.ceil(count / limit)
+
+            for (const product of productData) {
+                const productObj = product.toObject();
+
+                const brandOfferData = await Category.find({ name: product.brand });
+
+                let brandOfferValue = 0;
+                if (brandOfferData.length > 0 && brandOfferData[0].brandOffer !== undefined) {
+                    brandOfferValue = brandOfferData[0].brandOffer;
+                }
+
+                productObj.brandOffer = brandOfferValue;
+
+                productData[productData.indexOf(product)] = productObj;
+            }
 
 
             res.render("user/shop", {
@@ -134,6 +148,20 @@ const getProduct = async (req, res) => {
             const count = await Product.countDocuments(filterCriteria);
             const totalPages = Math.ceil(count / limit)
 
+            for (const product of productData) {
+                const productObj = product.toObject();
+
+                const brandOfferData = await Category.find({ name: product.brand });
+
+                let brandOfferValue = 0;
+                if (brandOfferData.length > 0 && brandOfferData[0].brandOffer !== undefined) {
+                    brandOfferValue = brandOfferData[0].brandOffer;
+                }
+
+                productObj.brandOffer = brandOfferValue;
+
+                productData[productData.indexOf(product)] = productObj;
+            }
 
             res.render("user/shop", {
                 category, brand,

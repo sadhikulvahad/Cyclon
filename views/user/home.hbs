@@ -51,12 +51,12 @@
         </div>
         <div class="container banner-container">
             <div class="banner-text">
-                <h1>New Model Cycle</h1>
-                <p>A stylish and comfortable ride for all terrains. Enjoy the best biking experience.</p>
-                <button class="btn">Buy Now</button>
+                <h1>Top Selling product</h1>
+                <p>{{product.description}}</p>
+                <a href="/product/{{product._id}}"><button class="btn">Buy Now</button></a>
             </div>
             <div class="banner-image">
-                <img src="/images/marin.jpg" alt="New Model Cycle">
+                <img src="/uploads/resized/{{product.productImages.[0]}}" alt="New Model Cycle">
             </div>
         </div>
     </section>
@@ -73,7 +73,7 @@
                     <h3>Cycles</h3>
                     <p>This cycle provides the best experience for all the riders who love the outdoors.</p>
                     <button class="btn">Buy Now</button>
-                    <p class="price">Price: $200</p>
+                    <p class="price">Price: ₹20000</p>
                 </div>
             </div>
             <div class="product-item">
@@ -84,7 +84,7 @@
                     <h3>Stylish Cycle</h3>
                     <p>Modern design with the latest features to give you an edge on the road.</p>
                     <button class="btn">Buy Now</button>
-                    <p class="price">Price: $250</p>
+                    <p class="price">Price: ₹25000</p>
                 </div>
             </div>
             <div class="product-item">
@@ -95,7 +95,7 @@
                     <h3>Modern Cycle</h3>
                     <p>Engineered for performance, this cycle is built to handle all terrains.</p>
                     <button class="btn">Buy Now</button>
-                    <p class="price">Price: $300</p>
+                    <p class="price">Price: ₹3000</p>
                 </div>
             </div>
         </div>

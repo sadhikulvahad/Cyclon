@@ -41,13 +41,12 @@
             right: 0;
             top: 50%;
         }
-
     </style>
 </head>
 
 <body>
     <div class="logo-container">
-    <a href="/"><img src="/images/Logo.png" alt="Logo"></a>
+        <a href="/"><img src="/images/Logo.png" alt="Logo"></a>
     </div>
 
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
@@ -60,16 +59,19 @@
                         {{exist}}
                     </div>
                     {{/if}}
+
                     <div class="mb-4">
                         <label for="fullName" class="form-label form-text-left">Full Name</label>
                         <input type="text" class="form-control" id="fullName" placeholder="Full Name" name="name">
                     </div>
                     <div id="error1" class="error-message"></div>
+
                     <div class="mb-3">
                         <label for="email" class="form-label form-text-left">Email</label>
                         <input type="email" class="form-control" id="email" placeholder="Email" name="email">
                     </div>
                     <div id="error2" class="error-message"></div>
+
                     <div class="mb-3 position-relative">
                         <label for="password" class="form-label form-text-left">Password</label>
                         <input type="password" class="form-control" id="password" placeholder="Password"
@@ -79,17 +81,28 @@
                         </button>
                     </div>
                     <div id="error3" class="error-message"></div>
+
                     <div class="mb-3">
                         <label for="confirmPassword" class="form-label form-text-left">Confirm Password</label>
                         <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password"
                             name="cPassword">
                     </div>
                     <div id="error4" class="error-message"></div>
+
+                    <!-- Referral Code Input -->
+                    <div class="mb-3">
+                        <label for="referralCode" class="form-label form-text-left">Referral Code (optional)</label>
+                        <input type="text" class="form-control" id="referralCode" placeholder="Referral Code"
+                            name="referralCode">
+                    </div>
+                    <div id="error5" class="error-message"></div>
+
                     {{#if message}}
                     <div class="alert alert-danger">
                         {{message}}
                     </div>
                     {{/if}}
+
                     <div class="form-text-right mb-3">
                         <a href="/login" class="text-muted">Login</a>
                     </div>

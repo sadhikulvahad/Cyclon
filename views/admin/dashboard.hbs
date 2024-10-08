@@ -25,6 +25,44 @@
                 margin-bottom: 10px;
             }
         }
+
+        .modal-xl {
+            max-width: 90%;
+        }
+
+        .top-selling-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-count {
+            margin-left: 10px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .btn-lg {
+            margin-top: -10px;
+            margin-bottom: 10px;
+            margin-right: 20px;
+        }
+
+        #barChart {
+            width: 100%;
+            height: 400px;
+        }
     </style>
 </head>
 
@@ -32,16 +70,22 @@
     {{> admin/header}}
     <div class="container mt-4">
         <h1 class="mb-4">Sales Report</h1>
+        <div class="d-flex justify-content-end mt-3" style="margin-top: -10px; margin-right: 20px;">
+            <button id="showTopSelling" class="btn btn-info btn-lg" data-bs-toggle="modal"
+                data-bs-target="#topSellingModal">
+                Show Top 10 Selling
+            </button>
+        </div>
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Total Orders</h5>
-                        <p id="totalOrders" class="card-text">{{totalOrders}}</p>
+                        <p id="totalOrders" class="card-text">₹{{totalOrders}}</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Total Revenue</h5>
@@ -49,7 +93,17 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Discount</h5>
+                        <p id="totalDiscount" class="card-text">₹{{totalDiscount}}</p>
+                    </div>
+                </div>
+            </div>
         </div>
+
+
 
         <div class="row mb-4">
             <div class="col-md-3">
@@ -77,13 +131,14 @@
             <button id="downloadExcel" class="btn btn-success">Download Excel</button>
         </div>
 
+        <canvas id="barChart" width="100" height="50"></canvas>
+
         <table id="salesTable" class="table table-striped">
             <thead>
                 <tr>
                     <th>Order Id</th>
                     <th>Username</th>
                     <th>Total Amount</th>
-                    {{!-- <th>Discount</th> --}}
                     <th>Final Amount</th>
                     <th>Status</th>
                     <th>Payment Method</th>
@@ -96,7 +151,6 @@
                     <td>{{increment @index}}</td>
                     <td>{{userId.name}}</td>
                     <td>₹{{totalPrice}}</td>
-                    {{!-- <td>₹{{discount}}</td> --}}
                     <td>₹{{finalPrice}}</td>
                     <td>{{status}}</td>
                     <td>{{paymentMethod}}</td>
@@ -107,18 +161,63 @@
         </table>
     </div>
 
+
+    <!-- Modal for Top 10 Selling Products, Brands, and Types -->
+    <div class="modal fade" id="topSellingModal" tabindex="-1" aria-labelledby="topSellingModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="topSellingModalLabel">Top 10 Selling Products, Brands, and Types
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <h5 class="text-center mb-3">Top 10 Products</h5>
+                            <ul id="topProducts" class="list-group list-group-flush top-selling-list"></ul>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <h5 class="text-center mb-3">Top 10 Brands</h5>
+                            <ul id="topBrands" class="list-group list-group-flush top-selling-list"></ul>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <h5 class="text-center mb-3">Top 10 Types</h5>
+                            <ul id="topTypes" class="list-group list-group-flush top-selling-list"></ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
+            let barChart;
+
             const filterType = document.getElementById('filterType');
             const applyFilter = document.getElementById('applyFilter');
             const salesTable = document.getElementById('salesTable');
             const salesTableBody = document.getElementById('salesTableBody');
             const totalOrders = document.getElementById('totalOrders');
             const totalRevenue = document.getElementById('totalRevenue');
+            const totalDiscount = document.getElementById('totalDiscount')
             const customDateFields = document.querySelectorAll('.custom-date');
 
             // Show/Hide date fields based on filter type
@@ -130,25 +229,112 @@
                 }
             });
 
+            function initBarChart(labels, data) {
+                const ctx = document.getElementById('barChart').getContext('2d'); // Ensure this is a canvas element
+                if (barChart) {
+                    barChart.destroy(); // Destroy previous chart before creating a new one
+                }
+                barChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Sales Amount',
+                            data: data,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            function aggregateDataForChart(orders, selectedFilter) {
+        let labels = [];
+        let salesData = [];
+        
+        // Group sales based on the filter type
+        switch (selectedFilter) {
+            case 'daily':
+                // Group sales by transaction or hour of the day
+                labels = orders.map(order => order.createdOn.slice(11, 16)); // Extract time
+                salesData = orders.map(order => order.finalPrice);
+                break;
+            
+            case 'weekly':
+                // Group sales by day of the week
+                labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                let weeklyData = new Array(7).fill(0); // One for each day
+                orders.forEach(order => {
+                    const day = new Date(order.createdOn).getDay(); // Get day of the week (0 = Sunday)
+                    weeklyData[day === 0 ? 6 : day - 1] += order.finalPrice; // Adjust for Monday-first week
+                });
+                salesData = weeklyData;
+                break;
+            
+            case 'monthly':
+                // Group sales by week of the month
+                let weeksInMonth = {};
+                orders.forEach(order => {
+                    const week = Math.ceil(new Date(order.createdOn).getDate() / 7); // Get the week of the month
+                    weeksInMonth[week] = (weeksInMonth[week] || 0) + order.finalPrice;
+                });
+                labels = Object.keys(weeksInMonth).map(week => `Week ${week}`);
+                salesData = Object.values(weeksInMonth);
+                break;
+
+            case 'yearly':
+                // Group sales by month
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                let yearlyData = new Array(12).fill(0);
+                orders.forEach(order => {
+                    const month = new Date(order.createdOn).getMonth(); // Get month (0 = Jan)
+                    yearlyData[month] += order.finalPrice;
+                });
+                salesData = yearlyData;
+                break;
+
+            case 'custom':
+                // Group sales by day in the custom date range
+                orders.forEach(order => {
+                    const day = order.createdOn.slice(0, 10); // Extract date
+                    if (!labels.includes(day)) {
+                        labels.push(day);
+                        salesData.push(order.finalPrice);
+                    } else {
+                        const index = labels.indexOf(day);
+                        salesData[index] += order.finalPrice;
+                    }
+                });
+                break;
+        }
+
+        return { labels, salesData };
+    }
+
             // Fetch data when Apply Filter is clicked
             applyFilter.addEventListener('click', function () {
                 const selectedFilter = filterType.value;
                 let startDate = '';
                 let endDate = '';
 
-                // If the selected filter is custom, get startDate and endDate
                 if (selectedFilter === 'custom') {
                     startDate = document.getElementById('startDate').value;
                     endDate = document.getElementById('endDate').value;
 
-                    // Ensure both dates are selected
                     if (!startDate || !endDate) {
-                        alert('Please select both start and end dates for custom filter.');
+                        showError('Please select both start and end dates for custom filter.');
                         return;
                     }
                 }
 
-                // Fetch sales data based on the selected filter
                 fetch('/admin/salesReport', {
                     method: 'POST',
                     headers: {
@@ -175,27 +361,176 @@
                         // Update total orders and revenue
                         totalOrders.textContent = data.totalOrders;
                         totalRevenue.textContent = `₹${data.totalRevenue}`;
+                        totalDiscount.textContent = `₹${data.totalDiscount}`;
 
                         // Populate table with filtered data
                         data.orders.forEach((order, index) => {
                             const row = `<tr>
-                            <td>${index + 1}</td>
-                            <td>${order.userId.name}</td>
-                            <td>₹${order.totalPrice}</td>
-                            <td>₹${order.finalPrice}</td>
-                            <td>${order.status}</td>
-                            <td>${order.paymentMethod}</td>
-                            <td>${order.createdOn}</td>
-                        </tr>`;
+                    <td>${index + 1}</td>
+                    <td>${order.userId.name}</td>
+                    <td>₹${order.totalPrice}</td>
+                    <td>₹${order.finalPrice}</td>
+                    <td>${order.status}</td>
+                    <td>${order.paymentMethod}</td>
+                    <td>${order.createdOn}</td>
+                </tr>`;
                             salesTableBody.insertAdjacentHTML('beforeend', row);
                         });
+
+                        // Prepare data for the chart
+                        const { labels, salesData } = aggregateDataForChart(data.orders, selectedFilter);
+
+                        // Initialize the bar chart with the new data
+                        initBarChart(labels, salesData);
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while fetching the sales report');
+                        showError('An error occurred while fetching the sales report: ' + error.message);
                     });
             });
         });
+
+        document.getElementById('downloadPdf').addEventListener('click', function () {
+            const filterType = document.getElementById('filterType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            fetch('/admin/salesPdfReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filterType,
+                    startDate,
+                    endDate
+                })
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'sales-report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(error => console.error('Error downloading PDF:', error));
+        });
+
+        document.getElementById('downloadExcel').addEventListener('click', function () {
+            const filterType = document.getElementById('filterType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            fetch('/admin/salesExcelReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filterType,
+                    startDate,
+                    endDate
+                })
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'sales-report.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(error => console.error('Error downloading Excel:', error));
+        });
+
+
+
+        document.getElementById('showTopSelling').addEventListener('click', function () {
+            fetch('/admin/topSelling', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Populate top products
+                        const productsList = document.getElementById('topProducts');
+                        productsList.innerHTML = '';
+                        data.topSellingProducts.forEach(product => {
+                            productsList.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${product.productName}</span>
+                        <span>${product.totalSales} sales</span>
+                    </li>`;
+                        });
+
+                        // Populate top brands
+                        const brandsList = document.getElementById('topBrands');
+                        brandsList.innerHTML = '';
+                        data.topSellingBrands.forEach(brand => {
+                            brandsList.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${brand.brand}</span>
+                        <span>${brand.totalSales} sales</span>
+                    </li>`;
+                        });
+
+                        // Populate top types
+                        const typesList = document.getElementById('topTypes');
+                        typesList.innerHTML = '';
+                        data.topSellingTypes.forEach(type => {
+                            typesList.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${type.category}</span>
+                        <span>${type.totalSales} sales</span>
+                    </li>`;
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching top selling data:', error));
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            new ApexCharts(document.querySelector("#barChart"), {
+                series: [{
+                    data: [400, 430, 448, 470, 540, 580, 690, 1100, 1200, 1380]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true,
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: ['South Korea', 'Canada', 'United Kingdom', 'Netherlands', 'Italy', 'France', 'Japan',
+                        'United States', 'China', 'Germany'
+                    ],
+                }
+            }).render();
+        });
+
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: message,
+            });
+        }
+
     </script>
 </body>
 

@@ -61,6 +61,25 @@
         width: 100px;
         height: 100px;
     }
+
+    .referral-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .referral-section h5 {
+        color: #28a745;
+        margin-bottom: 5px;
+    }
+
+    #referralCode {
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+    }
 </style>
 
 <body>
@@ -118,6 +137,15 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="referral-section mt-4">
+                            <h5>Refer a Friend</h5>
+                            <button class="btn btn-success" id="referNowBtn" data-bs-toggle="modal"
+                                data-bs-target="#referralModal">
+                                Refer Now
+                            </button>
+                        </div>
+
 
                         <!-- Address Section -->
                         <h4>Addresses</h4>
@@ -341,6 +369,26 @@
         </div>
     </div>
 
+    <!-- Add this new modal for referral -->
+    <div class="modal fade" id="referralModal" tabindex="-1" aria-labelledby="referralModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="referralModalLabel">Refer a Friend</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="color: green;">Refer a friend and both of you get amazing benefits.</p>
+                    <p>Share this unique referral code with your friends via WhatsApp:</p>
+                    <h5 id="referralCode"></h5>
+                    <div class="d-flex justify-content-center">
+                        <a id="shareWhatsApp" class="btn btn-success" target="_blank">Share on WhatsApp</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 </body>
 
@@ -361,7 +409,7 @@
                             alert('Address deleted successfully')
                             window.location.reload()
                         } else {
-                            alert('Error in deleting Address')
+                            alert(response.message)
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
@@ -435,7 +483,7 @@
                         $('#editAddressModal').modal('hide');
                         window.location.reload();
                     } else {
-                        alert('Error updating address');
+                        alert(response.message);
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -460,10 +508,8 @@
             const pincode = $('#pinCode').val();
             const userId = $('#userId').val()
 
-            // Validate required fields
             if (firstName && lastName && mobileNumber && houseNo && area && state && pinCode) {
                 console.log(firstName)
-                // AJAX request to save the address
                 $.ajax({
                     url: '/getAddress',
                     method: 'POST',
@@ -488,7 +534,7 @@
 
                             window.location.reload();
                         } else {
-                            alert('Error saving the address.');
+                            alert(response.message);
                         }
                     },
                     error: function (error) {
@@ -539,6 +585,18 @@
         }
     });
 
+    document.getElementById('referNowBtn').addEventListener('click', async () => {
+        const response = await fetch('/generateReferral', { method: 'POST' });
+        const data = await response.json();
+
+        document.getElementById('referralCode').textContent = data.referralCode
+    });
+
+    document.getElementById('shareWhatsApp').addEventListener('click', () => {
+        const referralCode = document.getElementById('referralCode').textContent;
+        const whatsappUrl = `https://wa.me/?text=Hey! Use my referral code ${referralCode} to sign up and enjoy benefits!`;
+        window.open(whatsappUrl, '_blank');
+    });
 
 
 </script>

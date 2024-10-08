@@ -48,6 +48,10 @@ router.put("/editCoupon",productController.editCoupon)
 router.delete("/couponDelete/:id",productController.deleteCoupon)
 
 router.post("/salesReport",adminController.salesReport)
+router.post("/salesPdfReport",adminController.downloadPdf)
+router.post("/salesExcelReport",adminController.downloadExcel)
+
+router.get("/topSelling",adminController.topSelling)
 
 
 

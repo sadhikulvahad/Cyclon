@@ -50,7 +50,7 @@ const userSchema = new Schema({
     },
     transactions: [{ 
         type: {
-            type: String, // "credit", "debit", "refund"
+            type: String, // "credit", "refferal", "refund"
             required: true
         },
         amount: {

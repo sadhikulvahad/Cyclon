@@ -176,13 +176,17 @@
                                     <div class="product-details">
                                         <h4 class="product-title"><b>{{productName}}</b></h4>
                                         <p class="text-muted">{{description}}</p>
-                                        <span class="text-muted" style="font-weight: 600;">Brand:</span> <span><strong></strong>{{brand}}</strong></span><br><br>
+                                        <span class="text-muted" style="font-weight: 600;">Brand:</span>
+                                        <span><strong></strong>{{brand}}</strong></span><br><br>
                                         <div class="product-rating">
                                             {{#each product.rating}}
                                             <i class="fas fa-star"></i>
                                             {{/each}}
                                         </div>
-                                        <span style="color: red;">{{maxOffer}}%Off</span><span class="text-mute"> <del>M.R.P: ₹{{regularPrice}}</del></span><br>
+                                        {{#if (gt (maxOffer productOffer brandOffer) 0)}}
+                                        <span style="color: red;">{{maxOffer productOffer brandOffer}}%Off</span>
+                                        {{/if}}
+                                        <span class="text-mute"> <del>M.R.P: ₹{{regularPrice}}</del></span><br>
                                         <span class="product-price">₹{{salePrice}}</span>
                                         <p class="text-mute mb-0">Free Delivery Mon, <b>12 oct</b></p>
                                         {{#if quantity}}
@@ -204,9 +208,10 @@
                         {{#each pages}}
                         <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
                             <a class="page-link"
-                                href="/shop?search={{../search}}&sort={{../sortOption}}&priceRange={{../selectedPriceRanges}}&type={{../selectedTypes}}&brand={{../selectedBrands}}&page={{this}}">
+                                href="/shop?search={{../search}}&sort={{../sortOption}}&priceRange={{#if ../selectedPriceRanges}}{{../selectedPriceRanges}}{{/if}}&type={{#if ../selectedTypes}}{{../selectedTypes}}{{/if}}&brand={{#if ../selectedBrands}}{{../selectedBrands}}{{/if}}&page={{this}}">
                                 {{this}}
                             </a>
+
                         </li>
                         {{/each}}
                     </ul>
@@ -223,34 +228,66 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        document.getElementById("sortProducts").addEventListener("change", function () {
-            const selectedOption = this.value;
-            const searchQuery = "{{search}}";
-            const page = "{{currentPage}}";
-            window.location.href = `/shop?search=${searchQuery}&sort=${selectedOption}&page=${page}`;
-        });
+        document.addEventListener('DOMContentLoaded', function () {
+            const sortSelect = document.getElementById("sortProducts");
+            const filterBtn = document.getElementById("filterBtn");
+            const searchForm = document.querySelector('form[action="/shop"]');  // Assuming there's a search form
 
-        document.getElementById("filterBtn").addEventListener("click", function () {
-            const priceRanges = Array.from(document.querySelectorAll('input[name="priceRange"]:checked')).map(el => el.value);
-            const selectedGears = document.querySelector('select[name="numberOfGears"]').value;
-            const selectedBrakeStyle = document.querySelector('select[name="brakeStyle"]').value;
-            const selectedTypes = Array.from(document.querySelectorAll('input[name="selectedTypes"]:checked')).map(el => el.value);
-            const selectedBrands = Array.from(document.querySelectorAll('input[name="selectedBrands"]:checked')).map(el => el.value);
+            function updateURL(params) {
+                const url = new URL(window.location);
+                for (let key in params) {
+                    if (params[key]) {
+                        url.searchParams.set(key, params[key]);
+                    } else {
+                        url.searchParams.delete(key);
+                    }
+                }
+                history.pushState({}, '', url);
+                window.location = url;
+            }
 
-            console.log(priceRanges, selectedGears, selectedBrakeStyle, selectedTypes, selectedBrands)
-
-            const queryParams = new URLSearchParams({
-                search: "{{search}}",
-                sort: "{{sortOption}}",
-                priceRange: priceRanges,
-                type: selectedTypes,
-                brand: selectedBrands,
-                page: 1
+            sortSelect.addEventListener("change", function () {
+                const params = {
+                    sort: this.value,
+                    search: new URLSearchParams(window.location.search).get('search') || '',
+                    page: 1  // Reset to first page when sorting
+                };
+                updateURL(params);
             });
 
-            console.log(queryParams)
+            filterBtn.addEventListener("click", function (e) {
+                e.preventDefault();
+                const priceRanges = Array.from(document.querySelectorAll('input[name="priceRange"]:checked')).map(el => el.value);
+                const selectedTypes = Array.from(document.querySelectorAll('input[name="selectedTypes"]:checked')).map(el => el.value);
+                const selectedBrands = Array.from(document.querySelectorAll('input[name="selectedBrands"]:checked')).map(el => el.value);
+                const selectedGears = document.querySelector('select[name="numberOfGears"]').value;
+                const selectedBrakeStyle = document.querySelector('select[name="brakeStyle"]').value;
 
-            window.location.href = `/shop?${queryParams.toString()}`;
+                const params = {
+                    search: new URLSearchParams(window.location.search).get('search') || '',
+                    sort: sortSelect.value,
+                    priceRange: priceRanges.join(','),
+                    type: selectedTypes.join(','),
+                    brand: selectedBrands.join(','),
+                    gears: selectedGears,
+                    brakeStyle: selectedBrakeStyle,
+                    page: 1  // Reset to first page when filtering
+                };
+                updateURL(params);
+            });
+
+            if (searchForm) {
+                searchForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const searchInput = this.querySelector('input[name="search"]');
+                    const params = {
+                        search: searchInput.value,
+                        sort: sortSelect.value,
+                        page: 1  // Reset to first page when searching
+                    };
+                    updateURL(params);
+                });
+            }
         });
 
     </script>

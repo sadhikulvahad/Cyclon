@@ -679,10 +679,8 @@
 
         function validateForm() {
             let isValid = true;
-            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
 
-            // Validate image inputs
             ['image1', 'image2', 'image3', 'image4'].forEach((imageName, index) => {
                 const fileInput = document.getElementById('input' + (index + 1));
                 const file = fileInput.files[0];
@@ -721,14 +719,70 @@
                         if (response.success) {
                             alert('Product added successfully!');
                             $('#addProductModal').modal('hide');
-                            window.location.reload();  
+                            window.location.reload();
                         } else {
-                            $('#error-message').text(response.error).show(); 
+                            $('#error-message').text(response.error).show();
                         }
                     },
                     error: function (xhr) {
                         const errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An unknown error occurred.';
-                        $('#error-message').text(errorMessage).show();  
+                        $('#error-message').text(errorMessage).show();
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function () {
+            // Function to handle file input change
+            function handleFileInputChange(event) {
+                const file = event.target.files[0];
+                const previewId = event.target.id.replace('Input', 'Preview');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        $(`#${previewId}`).attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // Attach change event listeners to file inputs
+            $('#editImage1Input, #editImage2Input, #editImage3Input, #editImage4Input').on('change', handleFileInputChange);
+
+            // When edit modal is shown, populate image previews
+            $('#editProductModal').on('show.bs.modal', function (event) {
+                const button = $(event.relatedTarget);
+                const productId = button.data('id');
+
+                // Fetch product data including images
+                $.ajax({
+                    url: `/admin/editProduct/${productId}`,
+                    type: 'GET',
+                    success: function (productData) {
+                        // Populate form fields
+                        $('#editProductId').val(productData._id);
+                        $('#editProductName').val(productData.productName);
+                        $('#editBrand').val(productData.brand);
+                        $('#editCategory').val(productData.category);
+                        $('#editDescription').val(productData.description);
+                        $('#editRegularPrice').val(productData.regularPrice);
+                        $('#editQuantity').val(productData.quantity);
+                        $('#editColor').val(productData.color);
+                        $('#editBrakeStyle').val(productData.brakeStyle);
+                        $('#editNumberOfGears').val(productData.numberOfGears);
+
+                        // Load images
+                        for (let i = 0; i < 4; i++) {
+                            if (productData.productImages[i]) {
+                                $(`#editImage${i + 1}Preview`).attr('src', `/uploads/resized/${productData.productImages[i]}`).show();
+                            } else {
+                                $(`#editImage${i + 1}Preview`).attr('src', '').hide();
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching product details:', error);
                     }
                 });
             });
@@ -739,17 +793,26 @@
                 e.preventDefault();
 
                 var formData = new FormData(this);
-                var formObject = {};
 
-                // Convert FormData to a simple object
-                formData.forEach(function (value, key) {
-                    formObject[key] = value;
-                });
+                // Add information about existing and new images
+                for (let i = 1; i <= 4; i++) {
+                    const inputFile = $(`#editImage${i}Input`)[0].files[0];
+                    const existingImageSrc = $(`#editImage${i}Preview`).attr('src');
+
+                    if (inputFile) {
+                        formData.append(`image${i}IsNew`, 'true');
+                    } else if (existingImageSrc && !existingImageSrc.includes('blob:')) {
+                        formData.append(`image${i}Existing`, existingImageSrc.split('/').pop());
+                    } else {
+                        formData.append(`image${i}Existing`, '');
+                    }
+                }
+
                 $.ajax({
                     url: '/admin/updateProduct',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(formObject),
+                    data: formData,
+                    contentType: false,
                     processData: false,
                     success: function (response) {
                         alert('Product updated successfully!');
@@ -816,11 +879,20 @@
                     },
                     error: function (err) {
                         console.error('Error fetching product details:', err);
-                        alert('Failed to load product details.');
+                        showError('Failed to load product details.');
                     }
                 });
             });
         });
+
+
+        function showError(message) {
+            Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: message,
+            });
+        }
 
 
     </script>
