@@ -59,13 +59,17 @@ const signup = async (req, res) => {
         if (password !== cPassword) {
             return res.render("user/signup", { message: "Your password doesn't match" })
         }
+        
         const findUser = await User.findOne({ email })
         if (findUser) {
             return res.render("user/signup", { exist: "This email is already exist" })
         }
-        const refferal = await User.findOne({ referalCode: referralCode })
-        if (!refferal) {
-            return res.render("user/signup", { exist: "Invalid refferal Code" })
+
+        if (referralCode) {
+            const referral = await User.findOne({ referalCode: referralCode });
+            if (!referral) {
+                return res.render("user/signup", { exist: "Invalid referral code" });
+            }
         }
 
         const otp = generateOtp()
@@ -174,6 +178,13 @@ const verifyOtp = async (req, res) => {
                 });
 
                 await refferedUser.save()
+
+                saveUserData.transactions.push({
+                    type: 'Reffer',
+                    amount: 100,
+                    description: `Reward get by reffering`
+                });
+                
             }
 
             const passwordHash = await securePassword(user.password)
@@ -183,13 +194,6 @@ const verifyOtp = async (req, res) => {
                 password: passwordHash,
                 wallet: CalculateTotalWallet(0, 100)
             })
-
-            saveUserData.transactions.push({
-                type: 'Reffer',
-                amount: 100,
-                description: `Reward get by reffering`
-            });
-
             
             await saveUserData.save()
 

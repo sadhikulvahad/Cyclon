@@ -165,21 +165,25 @@ const addOrder = async (req, res) => {
     const { selectedAddressId, paymentMethod, couponCode, finalPrice, discount, totalAmount, paymentStatus } = req.body;
 
     if (!finalPrice) {
-        console.log("Final price is missing.");
         return res.status(400).json({ success: false, message: 'Final price is required' });
     }
+
+    if (!selectedAddressId) {
+        return res.status(400).json({ success: false, message: 'Invalid address selected.' });
+    }
+
+
     try {
         const user = await User.findOne({ _id: req.session.user });
         const selectedAddress = await Address.findOne({ userId: user, "address._id": selectedAddressId }, { "address.$": 1 });
         const cart = await Cart.findOne({ userId: user })
 
+
         const address = selectedAddress.address.find(
             addr => addr._id.toString() === selectedAddressId
         );
 
-        if (!selectedAddress) {
-            return res.status(400).json({ success: false, error: 'Invalid address selected.' });
-        }
+        
 
 
         const orderItems = cart.items.map(item => ({
@@ -197,16 +201,23 @@ const addOrder = async (req, res) => {
             if (updateResult.modifiedCount === 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Insufficient stock for product with ID:',
+                    message: 'Insufficient stock for product with ID:',
                 });
             }
         }
 
         if (paymentMethod === "wallet") {
-            if (finalPrice > user.wallet) {
-                return res.status(400).json({ success: false, error: 'insufficient balance. Choose any other Payment Method' })
+
+            const finalPriceNumber = Number(finalPrice);
+            if (finalPriceNumber > user.wallet) {
+                return res.status(400).json({ success: false, message: 'insufficient balance. Choose any other Payment Method' })
             }
-            const newWalletBalance = user.wallet - finalPrice;
+            const newWalletBalance = user.wallet - finalPriceNumber;
+
+            if (isNaN(newWalletBalance)) {
+                return res.status(400).json({ success: false, message: 'Invalid wallet balance after deduction' });
+            }
+            
             await User.updateOne({ _id: req.session.user }, {
                 $set: {
                     wallet: newWalletBalance
@@ -736,7 +747,7 @@ const checkout = async (req, res) => {
         const user = req.session.user;
         const cart = await Cart.findOne({ userId: user });
         if (!cart || cart.items.length <= 0) {
-            return res.redirect('/shop'); // Redirect to shop page if cart is empty
+            return res.redirect('/shop'); 
         }
 
 

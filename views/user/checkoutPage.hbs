@@ -321,7 +321,7 @@
                             const rzp1 = new Razorpay(options);
                             rzp1.open();
                         } else {
-                            showError('Failed to create order.')
+                            showError(order.message)
                         }
                     }).catch(err => {
                         console.error('Error:', err);
@@ -329,7 +329,7 @@
                     });
                 } else if (paymentMethod === "cod") {
 
-                    if(finalPrice>5000){
+                    if(finalPrice>1000){
                         return showError("You can't select Cash On Delivery")
                     }
                     
@@ -352,7 +352,7 @@
                         if (data.success) {
                             window.location.href = "/orderSuccess";
                         } else {
-                            console.log('not success')
+                            showError(data.message)
                             window.location.href = "/orderFailed"
                         }
                     });
@@ -365,9 +365,9 @@
                         body: JSON.stringify({
                             paymentMethod: "wallet",
                             selectedAddressId: selectedAddressId,
-                            totalAmount: totalAmount,
-                            finalPrice : finalPrice,
-                            discount:discount,
+                            totalAmount: Number(totalAmount),
+                            finalPrice : Number(finalPrice),
+                            discount:Number(discount),
                             paymentStatus:"success",
                             couponCode
                         })
@@ -376,8 +376,7 @@
                         if (data.success) {
                             window.location.href = "/orderSuccess";
                         } else {
-                            console.log('not success')
-                            window.location.href = "/orderFailed"
+                            showError(data.message)
                         }
                     });
                 }
@@ -463,6 +462,14 @@
                 pincode: $('#pincode').val()
             };
 
+            if (!/^\d{10}$/.test(newAddress.phone)) {
+                return showError("Phone number must be exactly 10 digits");
+            }
+
+            if (!/^\d{6}$/.test(newAddress.pincode)) {
+                return showError("Pincode must be exactly 6 digits");
+            }
+
             if (newAddress.firstName && newAddress.phone && newAddress.houseNo && newAddress.area && newAddress.state && newAddress.pincode) {
                 $.ajax({
                     url: '/getAddress',
@@ -470,7 +477,7 @@
                     data: newAddress,
                     success: function (response) {
                         if (response.success) {
-                            showError('Address saved successfully!');
+                            showSuccess('Address saved successfully!');
                             $('#addAddressModal').modal('hide');
                             $('#newAddressForm')[0].reset();
                             $('#changeAddressModal').modal('show');
@@ -563,6 +570,13 @@
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
+        text: message,
+    });
+}
+function showSuccess(message) {
+    Swal.fire({
+        icon: 'success',
+        title: 'success',
         text: message,
     });
 }
