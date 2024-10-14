@@ -8,9 +8,11 @@
     }
 
     .center-image {
+        width: 600px !important;
         display: flex;
         justify-content: center;
-        height: 100%;
+        height: 600px;
+        overflow: hidden;
     }
 
     #magnifier-container {
@@ -44,7 +46,134 @@
     .wishlist-btn.active {
         color: red;
     }
+
+    .img-thumbnail {
+        width: 130px !important;
+        height: auto;
+        margin: 0 5px;
+    }
+
+    @media (max-width: 768px) {
+        .related-products {
+            margin-top: 10rem;
+        }
+
+        .wishlist-icon-wrapper {
+            top: 5rem;
+            right: 2rem;
+        }
+
+        .product-image {
+            margin-bottom: 1rem;
+        }
+
+        .product-details {
+            padding: 1rem;
+        }
+
+        .product-description {
+            display: -webkit-box;
+            display: box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            -webkit-line-clamp: 25;
+            line-clamp: 25;
+            max-height: calc(25 * 1.2em);
+        }
+
+        .pricing h4 {
+            font-size: 1.5rem;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+        }
+
+        .img-thumbnail {
+            width: 100px !important;
+            height: auto;
+            margin: 0 5px;
+        }
+
+        .sub-images-wrapper {
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .center-image {
+            width: 400px !important;
+            display: flex;
+            justify-content: center;
+            height: 200px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .wishlist-icon-wrapper {
+            top: 4rem;
+            right: 1rem;
+        }
+
+        .pricing h4 {
+            font-size: 1.2rem;
+        }
+
+        .img-thumbnail {
+            width: 50px !important;
+            height: auto;
+            margin: 0 5px;
+        }
+
+        .center-image {
+            width: 300px !important;
+            display: flex;
+            justify-content: center;
+            height: 300px;
+        }
+    }
+
+    .review-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .review-box:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .review-date {
+        font-size: 0.65rem;
+        color: #6c757d;
+    }
+
+    .review {
+        transition: max-height 0.3s ease-in-out;
+    }
+
+    .hide {
+        display: none;
+        /* Hide reviews */
+    }
+
+    #showMoreReviews {
+        cursor: pointer;
+        /* Pointer cursor on hover */
+        text-align: left;
+        /* Align text to the left */
+        color: #007bff;
+        /* Bootstrap primary color */
+    }
+
+    #showMoreReviews:hover {
+        text-decoration: underline;
+        /* Underline on hover */
+    }
 </style>
+
+
 
 
 <!-- Header Section -->
@@ -68,12 +197,12 @@
                     class="img-fluid" id="main-image">
                 <div id="magnifier-lens"></div>
             </div>
-            <div class="d-flex mt-3">
+            <div class="d-flex mt-3 sub-images-wrapper">
                 {{#each products.productImages}}
-                <img src="/uploads/resized/{{this}}" alt="{{products.productName}}" class="img-thumbnail me-2"
-                    style="width: 150px; height: 150px;">
+                <img src="/uploads/resized/{{this}}" alt="{{products.productName}}" class="img-thumbnail me-2">
                 {{/each}}
             </div>
+
         </div>
     </div>
 
@@ -124,40 +253,34 @@
 
             <!-- Delivery Information -->
             <div class="delivery mt-3">
-                <img src="/images/delivery-van-2.jpg" alt="Delivery" width="50px" height="30px">
+                <img src="/images/delivery-van-2.jpg" alt="Delivery" width="40px" height="24px">
                 <span>Rs 50 Delivery charge</span><br>
                 <span class="text-muted" style="font-size: 10px;">{{deliveryDetails}}</span>
             </div>
 
             <!-- Return Policy -->
             <div class="return-policy mt-3">
-                <img src="/images/return-product-2.jpg" alt="Return" width="50px" height="30px">
-                <span>7 Days Rplacement</span><br>
-                <span class="text-muted" style="font-size: 10px;">{{returnDetails}}</span>
+                <img src="/images/return-product-2.jpg" alt="Return" width="31px" height="24px">
+                <span> 7 Days Rplacement</span><br>
             </div>
-
-            <!-- Product Specifications -->
-            <h4 class="mt-4">About the Product</h4>
-            <table class="table">
-                {{#each productSpecs}}
-                <tr>
-                    <td>{{this.label}}</td>
-                    <td>{{this.value}}</td>
-                </tr>
-                {{/each}}
-            </table>
 
             <!-- User Review & Rating -->
-            <h4>User Review & Rating</h4>
-            <div class="reviews">
-                <div class="d-flex align-items-center">
-                    {{#each userRating}}
-                    <img src="{{this}}" alt="Star Rating" width="15px" height="15px" class="me-1">
-                    {{/each}}
+            <h4 class="mt-5">User Reviews</h4>
+            <div class="reviews d-flex flex-column">
+                {{#each reviews}}
+                <div class="review-box m-2 p-3 border rounded bg-light review {{#if @last}}hide{{/if}}">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{this.userId.name}}</strong>
+                        <span class="review-date">{{formatDate this.createdOn}}</span>
+                    </div>
+                    <p class="mt-2">{{this.reviews}}</p>
                 </div>
-                {{!-- <p>Reviewed in {{userReviewLocation}} on {{userReviewDate}}</p> --}}
-                <p>{{userReviewText}}</p>
+                {{/each}}
             </div>
+
+            <button id="showMoreReviews" class="btn btn-link d-none">Show more reviews <span
+                    class="arrow">▼</span></button>
+
         </div>
     </div>
 </div>
@@ -183,7 +306,38 @@
 
 <!-- Bootstrap JS -->
 <script>
+
     document.addEventListener('DOMContentLoaded', function () {
+
+        const reviews = document.querySelectorAll(".review");
+        const showMoreButton = document.getElementById("showMoreReviews");
+        let displayedReviews = 2;
+
+        reviews.forEach((review, index) => {
+            if (index >= displayedReviews) {
+                review.classList.add("hide");
+            }
+        });
+
+        if (reviews.length > displayedReviews) {
+            showMoreButton.classList.remove("d-none");
+        }
+
+        showMoreButton.addEventListener("click", function () {
+            displayedReviews += 2; // Show 2 more reviews
+            reviews.forEach((review, index) => {
+                if (index < displayedReviews) {
+                    review.classList.remove("hide");
+                }
+            });
+
+            if (displayedReviews >= reviews.length) {
+                showMoreButton.classList.add("d-none");
+            }
+        });
+
+
+
         const img = document.getElementById('main-image');
         const lens = document.getElementById('magnifier-lens');
         const container = document.getElementById('magnifier-container');
@@ -194,6 +348,7 @@
         lens.style.border = "1px solid #000";
         lens.style.cursor = "none";
         lens.style.borderRadius = '7.5px';
+        lens.style.display = 'none';
 
         container.addEventListener('mousemove', moveLens);
         container.addEventListener('mouseleave', () => {
@@ -228,7 +383,6 @@
             };
         }
 
-        // Wishlist button functionality
         document.getElementById('wishlistBtn').addEventListener('click', function () {
             const wishlistIcon = this.querySelector('.wishlist-btn');
             const productId = this.querySelector('.wishlist-btn').getAttribute('data-product-id');
@@ -253,13 +407,11 @@
                 });
         });
 
-        // Image switch functionality for sub-images
         const thumbnails = document.querySelectorAll('.img-thumbnail');
         thumbnails.forEach(thumbnail => {
             thumbnail.addEventListener('click', function () {
                 img.src = this.src;
 
-                // Adjust magnifier lens based on the new image
                 lens.style.backgroundImage = "url('" + img.src + "')";
             });
         });

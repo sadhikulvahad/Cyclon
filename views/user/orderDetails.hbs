@@ -54,6 +54,72 @@
         margin-top: -40px;
         position: absolute;
     }
+
+    .btn {
+        padding: 5px 10px !important;
+        font-size: 16px;
+    }
+
+    @media (max-width: 768px) {
+        .shipping-payment-section {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .shipping-address,
+        .payment-details {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .continue-payment-btn {
+            position: static;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .shipping-address {
+            padding: 10px;
+        }
+
+        .payment-details {
+            padding: 10px;
+        }
+
+        .table-responsive {
+            font-size: 14px;
+        }
+
+        .cancel-btn,
+        .return-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        h2,
+        h4 {
+            font-size: 18px;
+        }
+
+        .table thead th,
+        .table tbody td {
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 3px 6px !important;
+            font-size: 12px !important;
+            width: 8rem !important;
+        }
+
+    }
 </style>
 
 
@@ -112,11 +178,14 @@
         </div>
     </div>
     {{#if (eq order.paymentStatus "failed")}}
+    {{#if (ne order.status "cancelled")}}
     <div class="d-flex justify-content-end ">
         <button id="retryButton" style="color: white;" class=" btn btn-success continue-payment-btn">continue
             payment</button>
     </div>
     {{/if}}
+    {{/if}}
+
 
     <h4>Items Ordered</h4>
     <div class="table-responsive">
@@ -126,6 +195,9 @@
                     <th>Product</th>
                     <th>Quantity</th>
                     <th>Price</th>
+                    {{#if (eq order.status "delivered")}}
+                    <th>Add Review</th>
+                    {{/if}}
                 </tr>
             </thead>
             <tbody>
@@ -134,6 +206,14 @@
                     <td>{{this.product.productName}}</td>
                     <td>{{this.quantity}}</td>
                     <td>₹{{this.price}}</td>
+                    {{#if (eq ../order.status "delivered")}}
+                    <td>
+                        <button class="btn btn-primary"
+                            onclick="openReviewModal('{{this.product.productName}}', '{{this.product._id}}')">Add
+                            Review</button>
+                    </td>
+                    {{/if}}
+
                 </tr>
                 {{/each}}
             </tbody>
@@ -143,16 +223,18 @@
     <div class="d-flex justify-content-between">
         <a href="/orders" class="btn btn-secondary">Back to Orders</a>
         {{#if (eq order.status "delivered")}}
-        <button class="btn btn-danger return-btn" onclick="returnOrder('{{order.orderId}}')">Return order</button>
+        <button class="btn btn-danger return-btn btn-sm" onclick="returnOrder('{{order.orderId}}')">Return
+            order</button>
         {{else}}
         {{#if (eq order.status "return Request")}}
-        <button class="btn btn-danger cancelReturn-btn">Cancel Return</button>
+        <button class="btn btn-danger cancelReturn-btn btn-sm">Cancel Return</button>
         {{else}}
         {{#if (eq order.status "returned")}}
-        <button class="btn btn-danger cancelReturn-btn" {{#if (eq order.status "returned" )}}disabled{{/if}}>Cancel
+        <button class="btn btn-danger cancelReturn-btn btn-sm" {{#if (eq order.status "returned"
+            )}}disabled{{/if}}>Cancel
             Return</button>
         {{else}}
-        <button class="btn btn-danger cancel-btn" onclick="cancelOrder('{{order.orderId}}')" {{#if (eq
+        <button class="btn btn-danger cancel-btn btn-sm" onclick="cancelOrder('{{order.orderId}}')" {{#if (eq
             order.status "cancelled" )}}disabled{{/if}}>Cancel Order</button>
         {{/if}}
         {{/if}}
@@ -199,6 +281,28 @@
 </div>
 
 
+<!-- Add Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">Add Review for <span id="modalProductName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="modalReviewInput" class="form-control" placeholder="Write your review here" />
+                <input type="hidden" id="modalProductId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" onclick="submitReview()">Submit Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -221,6 +325,57 @@
         const returnModal = new bootstrap.Modal(document.getElementById('returnConfirmModal'))
         returnModal.show()
     }
+
+    function openReviewModal(productName, productId) {
+        document.getElementById('modalProductName').innerText = productName;
+        document.getElementById('modalProductId').value = productId;
+
+        var reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+        reviewModal.show();
+    }
+
+    function submitReview() {
+        const review = document.getElementById('modalReviewInput').value;
+        const productId = document.getElementById('modalProductId').value;
+
+        if (!review) {
+            alert("Please enter a review.");
+            return;
+        }
+
+        fetch('/reviews', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productId: productId,
+                review: review
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Review added successfully',
+                    })
+                    document.getElementById('modalReviewInput').value = '';
+                    var reviewModal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
+                    reviewModal.hide();
+                } else {
+                    showError("Failed to submit review. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showError("An error occurred while submitting the review.");
+            });
+    }
+
+
+
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirmCancelBtn').addEventListener('click', function () {
@@ -249,8 +404,8 @@
 
 
         document.getElementById('retryButton').addEventListener('click', function () {
-            const orderId = "{{order.orderId}}"; // Handlebars template variable
-            const finalPriceString = '{{ order.finalPrice }}'; // Handlebars template variable
+            const orderId = "{{order.orderId}}";
+            const finalPriceString = '{{ order.finalPrice }}';
             const finalPrice = Number(finalPriceString)
 
             fetch(`/retryPayment/${orderId}`, {
@@ -307,7 +462,7 @@
                         };
 
                         const rzp1 = new Razorpay(options);
-                        rzp1.open(); // Open the Razorpay modal
+                        rzp1.open();
                     } else {
                         showError('Failed to initiate retry payment. Razorpay Order ID missing.');
                     }
@@ -317,6 +472,7 @@
                     showError('Error occurred while retrying payment: ' + err.message);
                 });
         });
+
     })
 
 
@@ -330,7 +486,6 @@
 
 
     function updatePaymentStatus(orderId, status) {
-        console.log('asdjhkfgkjh')
         fetch('/updatePaymentStatus', {
             method: 'POST',
             headers: {

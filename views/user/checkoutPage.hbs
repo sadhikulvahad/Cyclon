@@ -82,14 +82,16 @@
                 </div>
 
                 <!-- Coupon Code -->
-                <div class="mb-4">
-                    <div class="input-group">
-                        <input type="text" name="couponCode" id="couponCode" class="form-control" placeholder="Enter Your coupon code"
-                            aria-label="Coupon code">
-                        <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
-                    </div>
-                    <div id="coupon-message" class="mt-2"></div>
-                </div>
+                <!-- Coupon Code -->
+<div class="mb-4">
+    <div class="input-group">
+        <input type="text" name="couponCode" id="couponCode" class="form-control" placeholder="Enter Your coupon code"
+            aria-label="Coupon code">
+        <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
+    </div>
+    <div id="coupon-message" class="mt-2"></div>
+</div>
+
             </div>
 
             <!-- Order Summary -->
@@ -233,9 +235,8 @@
             $('#selectedAddressInput').val(address._id);
         }
 
-            // Handle payment method selection
             document.getElementById('rzp-button').onclick = function (e) {
-                e.preventDefault(); // Prevent default form submission
+                e.preventDefault(); 
 
                 const selectedAddressId = $('#selectedAddressInput').val();
                 const paymentMethod = $('input[name="paymentMethod"]:checked').val();
@@ -311,7 +312,7 @@
                                 },
                                 modal: {
                                     ondismiss: function() {
-                                    // Handle modal close
+
                                     showError('Payment process was cancelled.');
                                     updatePaymentStatus(orderId, 'failed')
                                     }
@@ -382,7 +383,6 @@
                 }
             };
 
-        // Show change address modal and fetch addresses
         $('#changeAddressModal').on('show.bs.modal', function () {
             $.ajax({
                 url: '/get-addresses',
@@ -425,7 +425,6 @@
             });
         });
 
-        // Select address functionality
         $(document).on('click', '.selectAddressBtn', function () {
             const addressId = $(this).data('id');
 
@@ -449,7 +448,6 @@
             });
         });
 
-        // Save new address functionality
         $('#saveAddressBtn').on('click', function () {
             const newAddress = {
                 firstName: $('#firstName').val(),
@@ -495,7 +493,6 @@
             }
         });
 
-        // Load saved address on page load
         const savedAddressId = localStorage.getItem('selectedAddressId');
         if (savedAddressId) {
             $.ajax({
@@ -515,74 +512,77 @@
         }
 
 
-        document.getElementById('apply-coupon').addEventListener('click', function(){
-            const couponCode = document.getElementById('couponCode').value
-            const totalAmountString = document.getElementById('total-amount').textContent
+        document.getElementById('apply-coupon').addEventListener('click', function() {
+            const couponCode = document.getElementById('couponCode').value;
+            const totalAmountString = document.getElementById('total-amount').textContent;
             const totalAmount = Number(totalAmountString.replace(/[₹,]/g, '').trim());
 
-            if(!couponCode){
-                document.getElementById('couponCode').textContent = 'Please enter a coupon code'
-                return
+            if (!couponCode) {
+                document.getElementById('coupon-message').textContent = 'Please enter a coupon code';
+                return;
             }
-            console.log(couponCode)
-
+    
             fetch('/applyCoupon', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({couponCode, totalAmount})
+                body: JSON.stringify({ couponCode, totalAmount })
             })
             .then(response => response.json())
-            .then(data =>{
-                if(data.success){
+            .then(data => {
+                if (data.success) {
                     Swal.fire({
                         title: 'Coupon Applied!',
-                        html: `<span style="color: green;" >New price: ₹${data.discount}</span>`,
+                        html: `<span style="color: green;">You saved: ₹${data.discount}</span>`,
                         icon: 'success',
                         confirmButtonText: 'Okay'
                     });
+
                     document.getElementById('order-total').textContent = `₹${data.finalAmount}`;
-                    document.getElementById('return-message').textContent = `${data.message}`
-                    document.getElementById('coupon-discount').textContent = `${data.percentage}%`
-                }else{
+                    document.getElementById('return-message').textContent = `${data.message}`;
+                    document.getElementById('coupon-discount').textContent = `${data.percentage}%`;
+
+                    const applyButton = document.getElementById('apply-coupon');
+                    applyButton.textContent = 'Remove Coupon';
+
+                    applyButton.addEventListener('click', function() {
+                        document.getElementById('couponCode').value = '';
+
+                        window.location.reload();
+                    });
+                } else {
                     Swal.fire({
-                        title : 'Error in Applying Coupon',
+                        title: 'Error in Applying Coupon',
                         html: `<span style="color: red;">${data.message}</span>`,
                         icon: 'error',
-                        confirmButtonText : 'Okay'
-                    })
+                        confirmButtonText: 'Okay'
+                    });
                 }
             })
-            .catch(error =>{
-                console.log('Error:', error)
-                document.getElementById('coupon-message').textContent = 'There was an error applying the coupon.'
-            })
-        })
-
-
-
-
+            .catch(error => {
+                document.getElementById('coupon-message').textContent = 'There was an error applying the coupon.';
+            });
+        });
     });
 
 
     function showError(message) {
-    Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: message,
-    });
-}
-function showSuccess(message) {
-    Swal.fire({
-        icon: 'success',
-        title: 'success',
-        text: message,
-    });
-}
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: message,
+        });
+    }
+    function showSuccess(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'success',
+            text: message,
+        });
+    }
 
-function updatePaymentStatus(orderId, status) {
-        console.log('asdjhkfgkjh')
+    function updatePaymentStatus(orderId, status) {
         fetch('/updatePaymentStatus', {
             method: 'POST',
             headers: {
@@ -595,7 +595,6 @@ function updatePaymentStatus(orderId, status) {
         }).then(res => res.json())
         .then(data => {
             if (data.success) {
-                console.log('Payment status updated to:', status);
                 window.location.href = "/orderFailed"
 
             } else {

@@ -68,6 +68,103 @@
         border: none;
         border-top: 1px solid #ddd;
     }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .pagination a {
+        margin: 0 5px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #007bff;
+    }
+
+    .pagination a.active {
+        background-color: #007bff;
+        color: white;
+        border: 1px solid #007bff;
+    }
+
+    .pagination a:hover {
+        background-color: #f1f1f1;
+    }
+
+    @media (max-width: 1200px) {
+        .order-box {
+            width: 90%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .order-box {
+            width: 100%;
+        }
+
+        .product-details h5 {
+            font-size: .85rem;
+        }
+
+        .product-details p {
+            font-size: 0.6rem;
+        }
+
+        .payment-status {
+            font-size: .55rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .product-image {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .product-details {
+            width: 100%;
+        }
+
+        .product-details h5 {
+            font-size: .85rem;
+        }
+
+        .product-details p {
+            font-size: 0.55rem;
+        }
+
+        .payment-status {
+            font-size: .55rem;
+        }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .pagination a {
+        margin: 0 5px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #007bff;
+    }
+
+    .pagination a.active {
+        background-color: #007bff;
+        color: white;
+        border: 1px solid #007bff;
+    }
+
+    .pagination a:hover {
+        background-color: #f1f1f1;
+    }
 </style>
 
 
@@ -88,24 +185,40 @@
 
             <!-- Product Details -->
             <div class="product-details">
-                <h5>{{this.product.productName}}</h5>
-                <p><strong>Order ID:</strong> {{../orderId}}</p>
-                <p><strong>Price:</strong> ₹{{../finalPrice}}</p>
-                <p><strong>Quantity:</strong> {{this.quantity}}</p>
+                <h5 class="mb-0">{{this.product.productName}}</h5>
+                <p class="mb-0"><strong>Order ID:</strong> {{../orderId}}</p>
+                <p class="mb-0"><strong>Price:</strong> ₹{{../finalPrice}}</p>
+                <p class="mb-0"><strong>Quantity:</strong> {{this.quantity}}</p>
                 {{#if (eq ../paymentStatus "success")}}
-                <span><strong>Payment Status :</strong> <span style="color: green;">Success</span></span>
+                <span class="payment-status mb-0"><strong>Payment Status :</strong> <span style="color: green;" class="payment-status mb-0">Success</span></span>
                 {{else}}
-                <span><strong>Payment Status :</strong> <span style="color: red;">Failed</span></span>
+                <span class="payment-status mb-0"><strong>Payment Status :</strong> <span style="color: red;" class="payment-status mb-0">Failed</span></span>
                 {{/if}}
-                <p class="{{#if (eq ../status 'returned')}}text-danger{{/if}}">
+                <p class="{{#if (eq ../status 'returned')}}text-danger{{/if}} mb-0">
                     <strong>Order Status : </strong>{{../status}}
                 </p>
 
-                <a href="/orderDetails/{{../orderId}}">View Details</a>
+                <p><a href="/orderDetails/{{../orderId}}" class="mb-0">View Details</a></p>
             </div>
         </div>
         <hr>
         {{/each}}
     </div>
     {{/each}}
+</div>
+
+<div class="pagination">
+    {{#if (gt totalPages 1)}}
+    {{#if (gt currentPage 1)}}
+    <a href="?page={{dec currentPage}}" class="prev">Previous</a>
+    {{/if}}
+
+    {{#each (range 1 totalPages)}}
+    <a href="?page={{this}}" class="{{#if (eq this ../currentPage)}}active{{/if}}">{{this}}</a>
+    {{/each}}
+
+    {{#if (lt currentPage totalPages)}}
+    <a href="?page={{inc currentPage}}" class="next">Next</a>
+    {{/if}}
+    {{/if}}
 </div>

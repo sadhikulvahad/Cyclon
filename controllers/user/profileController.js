@@ -6,6 +6,7 @@ const User = require('../../models/userSchema')
 const Address = require('../../models/addressSchema')
 const Order = require('../../models/orderSchema')
 const Coupon = require('../../models/couponSchema')
+const Review = require('../../models/reviews')
 const crypto = require('crypto');
 const { success } = require('./authController');
 const fs = require('fs');
@@ -32,9 +33,9 @@ const addAddress = async (req, res) => {
     const userId = req.session.user
 
     if (phone.length !== 10) {
-        return res.json({success:false, message: 'Mobile number is not valid' })
+        return res.json({ success: false, message: 'Mobile number is not valid' })
     } else if (pincode.length !== 6) {
-        return res.json({ success:false, message: 'Enter valid pincode' })
+        return res.json({ success: false, message: 'Enter valid pincode' })
     }
     try {
         let address = await Address.findOne({ userId })
@@ -86,9 +87,9 @@ const editProfile = async (req, res) => {
 const editAddress = async (req, res) => {
     const { firstName, lastName, phone, houseNo, area, landmark, state, pincode, addressId } = req.body
     if (phone.length !== 10) {
-        return res.json({success: false, message: 'Mobile number is not valid' })
+        return res.json({ success: false, message: 'Mobile number is not valid' })
     } else if (pincode.length !== 6) {
-        return res.json({success: false, message: 'Enter valid pincode' })
+        return res.json({ success: false, message: 'Enter valid pincode' })
     }
 
     try {
@@ -155,11 +156,27 @@ const refferal = async (req, res) => {
 
 
 const userOrders = async (req, res) => {
-    const user = req.session.user
-    const userData = await User.findOne({ _id: user })
-    const orders = await Order.find({ userId: user }).sort({ createdOn: -1 }).populate('orderdItems.product')
-    res.render('user/orders', { userData, orders })
+    const user = req.session.user;
+    const userData = await User.findOne({ _id: user });
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = 7; 
+    const skip = (page - 1) * limit;
+
+    const orders = await Order.find({ userId: user })
+        .sort({ createdOn: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('orderdItems.product');
+
+    const totalOrders = await Order.countDocuments({ userId: user });
+    const totalPages = Math.ceil(totalOrders / limit);
+
+    res.render('user/orders', { userData, orders, totalPages, currentPage: page });
 }
+
+
+
 
 const addOrder = async (req, res) => {
     const { selectedAddressId, paymentMethod, couponCode, finalPrice, discount, totalAmount, paymentStatus } = req.body;
@@ -183,7 +200,7 @@ const addOrder = async (req, res) => {
             addr => addr._id.toString() === selectedAddressId
         );
 
-        
+
 
 
         const orderItems = cart.items.map(item => ({
@@ -217,7 +234,7 @@ const addOrder = async (req, res) => {
             if (isNaN(newWalletBalance)) {
                 return res.status(400).json({ success: false, message: 'Invalid wallet balance after deduction' });
             }
-            
+
             await User.updateOne({ _id: req.session.user }, {
                 $set: {
                     wallet: newWalletBalance
@@ -265,8 +282,6 @@ const verifyPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-        console.log(razorpay_order_id, razorpay_payment_id, razorpay_signature)
-
         const order = await Order.findOne({ orderId: razorpay_order_id });
 
         if (!order || order.paymentMethod !== 'razorpay') {
@@ -306,11 +321,11 @@ const verifySignature = ({ order_id, payment_id, signature }) => {
 
 const updatePaymentStatus = async (req, res) => {
     const { orderId, status } = req.body
-    console.log(orderId, "orderid", status, 'status')
     try {
         const result = await Order.updateOne({ _id: orderId }, {
             $set: {
-                paymentStatus: status
+                paymentStatus: status,
+                paymentFailedAt : new Date()
             }
         })
 
@@ -400,7 +415,6 @@ const cancelOrder = async (req, res) => {
                 }
             }
 
-            // Update the order status to 'cancelled'
             order.status = 'cancelled';
             await order.save();
 
@@ -413,9 +427,6 @@ const cancelOrder = async (req, res) => {
                         amount: order.finalPrice,
                         description: `credited for cancelled order #${orderId}`
                     });
-
-                    console.log(user.wallet, 'user.wallet')
-                    console.log(user.transactions, 'user.transactions')
 
                     await user.save();
                 }
@@ -485,7 +496,7 @@ const getWishlist = async (req, res) => {
         const userData = await User.findById(user).populate({
             path: 'wishlist',
             model: 'Product',
-            select: 'productName productImages productOffer salePrice description regularPrice quantity _id' // Include product _id
+            select: 'productName productImages productOffer salePrice description regularPrice quantity _id' 
         });
 
         if (!userData) {
@@ -572,7 +583,6 @@ const changePass = async (req, res) => {
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await User.updateOne({ _id: userId }, { $set: { password: hashedPassword } });
-        console.log("Password changed successfully");
         res.redirect('/profile');
     } catch (error) {
         console.error('Error changing password', error);
@@ -586,26 +596,21 @@ const cart = async (req, res) => {
         const userData = await User.findOne({ _id: user });
         let userCart = await Cart.findOne({ userId: user }).populate('items.productId');
 
-        // Check for removed or updated products in the cart
         if (userCart) {
             let itemsToRemove = [];
             userCart.items.forEach((item, index) => {
                 if (!item.productId) {
-                    // Product was removed by the admin, so mark it for removal
                     itemsToRemove.push(index);
                 } else if (item.price !== item.productId.salePrice) {
-                    // Product price has been updated, so update the cart item
                     item.price = item.productId.salePrice;
                     item.totalPrice = Math.round(item.price * item.quantity);
                 }
             });
 
-            // Remove the items that are no longer available
             itemsToRemove.forEach(index => {
                 userCart.items.splice(index, 1);
             });
 
-            // Recalculate the total price after potential updates
             userCart.calculateTotalPrice();
             await userCart.save();
         }
@@ -747,7 +752,7 @@ const checkout = async (req, res) => {
         const user = req.session.user;
         const cart = await Cart.findOne({ userId: user });
         if (!cart || cart.items.length <= 0) {
-            return res.redirect('/shop'); 
+            return res.redirect('/shop');
         }
 
 
@@ -760,7 +765,7 @@ const checkout = async (req, res) => {
         });
 
         if (unavailableProduct) {
-            return res.redirect('/shop'); // Redirect to shop page if any product is unavailable
+            return res.redirect('/shop'); 
         }
 
         cart.totalPrice = cart.items.reduce((total, item) => {
@@ -822,8 +827,6 @@ const checkCouponCode = async (req, res) => {
         const originalAmount = cart.totalPrice
         const discount = (originalAmount * percentage) / 100
         const finalAmount = Math.round(originalAmount - discount)
-
-        console.log(percentage, "percentage", discount, "discount")
 
         return res.json({ success: true, originalAmount, discount, finalAmount, percentage, message: `Coupon applied successfully. You saved ₹${discount}!` })
 
@@ -922,12 +925,10 @@ const downloadInvoice = async (req, res) => {
         doc.line(200, 10, 200, 285);
         doc.line(10, 285, 200, 285);
 
-        // Add logo
         const logoPath = path.join(__dirname, '..', '..', 'public', 'images', 'logo.png');
-        const logoImg = fs.readFileSync(logoPath).toString('base64'); // Use a function to load the image
+        const logoImg = fs.readFileSync(logoPath).toString('base64'); 
         doc.addImage(logoImg, 'PNG', 10, 20, 55, 20);
 
-        // Header
         doc.setFontSize(20);
         doc.text('Cyclon', 75, 20);
         doc.setFont("Helvetica", "bold");
@@ -938,7 +939,6 @@ const downloadInvoice = async (req, res) => {
         doc.text('Phone : 8129616329', 75, 44)
         doc.text('GSTIN: 8s1a2d9h6i1k6329', 75, 50);
 
-        // Invoice details
         doc.setFontSize(16);
         doc.text('TAX INVOICE', 180, 50, { align: 'right' });
         doc.setFontSize(10);
@@ -949,7 +949,6 @@ const downloadInvoice = async (req, res) => {
 
         doc.line(10, 91, 200, 91)
 
-        // Bill To
         doc.setFontSize(12);
         doc.text('Bill To:', 20, 89);
         doc.setFont("Helvetica", "italic");
@@ -977,7 +976,6 @@ const downloadInvoice = async (req, res) => {
             doc.text('Address not provided', 110, 96);
         }
 
-        // Table for items
         const tableColumn = ["Item & Description", "Qty", "Rate", "Amount"];
         const tableRows = [];
 
@@ -1041,12 +1039,11 @@ const downloadInvoice = async (req, res) => {
 
 
     } catch (error) {
-        console.error('Error generating invoice:', error); // Log the error message
+        console.error('Error generating invoice:', error); 
         res.status(500).send('Error generating the invoice');
     }
 }
 
-// Helper function to convert number to words (you'll need to implement this)
 function numberToWords(num) {
     if (num === 0) return "Zero";
 
@@ -1075,7 +1072,6 @@ function numberToWords(num) {
         }
     };
 
-    // Handle decimals
     const parts = num.toString().split('.');
     const integerPart = parseInt(parts[0]);
     const fractionalPart = parts[1] ? parseInt(parts[1]) : 0;
@@ -1086,6 +1082,26 @@ function numberToWords(num) {
     }
 
     return words;
+}
+
+
+const addReview = async (req,res)=>{
+    const {productId, review} = req.body
+    const user = req.session.user
+    try {
+
+        const newReview = new Review({
+            userId: user,
+            productId: productId,
+            reviews: review
+        })
+
+        newReview.save()
+        res.status(200).json({ success: true, message: 'Review added successfully' });
+        
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 }
 
 
@@ -1120,5 +1136,6 @@ module.exports = {
     updatePaymentStatus,
     retrypayment,
     refferal,
-    getFailed
+    getFailed,
+    addReview
 }

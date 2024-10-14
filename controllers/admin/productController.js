@@ -46,7 +46,6 @@ const addProduct = async (req, res) => {
                 return res.status(400).json({ success: false, error: 'Offer must be less than 100% and greater than 0%', showModal: true })
             }
             if (quantity < 0 || regularPrice < 0) {
-                console.log('ereq')
                 return res.status(400).json({ success: false, error: 'Numbers must be greater than zero', showModal: true })
             }
 
@@ -55,7 +54,6 @@ const addProduct = async (req, res) => {
 
             const salePrice = calculateSalePrice(regularPrice, productOffer, brandOffer)
 
-            // Process and resize images
             const resizedImages = [];
             const fileKeys = Object.keys(req.files);
 
@@ -72,7 +70,6 @@ const addProduct = async (req, res) => {
                 }
             }
 
-            // Create new product instance
             const product = new Product({
                 productName,
                 brand,
@@ -90,7 +87,6 @@ const addProduct = async (req, res) => {
             });
 
             await product.save();
-            console.log("Product saved successfully:", product);
             return res.status(200).json({ success: true, message: 'Product added successfully!' });
         } catch (error) {
             console.error('Error saving product:', error);
@@ -159,7 +155,6 @@ const editProduct = async (req, res) => {
             const brandData = await Category.findOne({ categoryType: "brand", name: brand });
             const salePrice = calculateSalePrice(regularPrice, product.productOffer, brandData.brandOffer);
 
-            // Process images
             let updatedImages = [];
             for (let i = 1; i <= 4; i++) {
                 if (req.body[`image${i}IsNew`] === 'true' && req.files[`image${i}`]) {
@@ -176,7 +171,6 @@ const editProduct = async (req, res) => {
                 }
             }
 
-            // Update product fields
             product.productName = productName;
             product.brand = brand;
             product.category = category;
@@ -247,7 +241,6 @@ const addOffer = async (req, res) => {
         }
         res.json({ success: true, message: `${offerType} offer added successfully` })
     } catch (error) {
-        console.error('Server Error:', error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
@@ -287,7 +280,6 @@ const removeOffer = async (req, res) => {
         res.json({ success: true, message: `${offerType} offer added successfully` })
 
     } catch (error) {
-        console.error('Server Error:', error);
         res.status(500).json({ error: "Internal server error" });
     }
 }

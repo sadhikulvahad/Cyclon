@@ -168,7 +168,7 @@
                 });
 
                 $('#addModal, #editModal').on('hidden.bs.modal', function () {
-                    $(this).find('.alert').addClass('d-none').text(''); // Hide the error message
+                    $(this).find('.alert').addClass('d-none').text(''); 
                 });
 
 
@@ -214,9 +214,7 @@
                     const name = document.getElementById('editItemName').value;
                     const categoryType = document.getElementById('editCategory').value;
                     const id = document.getElementById('editCategoryId').value;
-                    console.log(name)
                     if (name && id && categoryType) {
-                        console.log(name)
                         $.ajax({
 
                             url: '/admin/editCategory',
@@ -254,7 +252,6 @@
                                 alert(response.error);
                             } else {
                                 alert(response.message);
-                                // Update button text and class based on the new status
                                 if (newStatus) {
                                     button.textContent = 'Deactivate';
                                     button.classList.remove('btn-secondary');

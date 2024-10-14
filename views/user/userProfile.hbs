@@ -80,6 +80,16 @@
         font-weight: bold;
         text-align: center;
     }
+
+    .product-description {
+        display: -webkit-box;
+        display: box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        -webkit-line-clamp: 25;
+        line-clamp: 25;
+        max-height: calc(25 * 1.2em);
+    }
 </style>
 
 <body>
@@ -445,7 +455,7 @@
             $('#editLandmark').val(landmark);
             $('#editState').val(state);
             $('#editPinCode').val(pincode);
-            // Show the modal
+
             $('#editAddressModal').modal('show');
         });
 
@@ -458,7 +468,7 @@
                 alert("Address ID is missing. Cannot update the address.");
                 return;
             }
-            // Prepare the data to be sent
+
             const data = {
                 addressId: addressId,
                 firstName: $('#editFirstName').val(),
@@ -471,7 +481,7 @@
                 pincode: $('#editPinCode').val(),
             };
 
-            // Send the AJAX request to update the address
+
             $.ajax({
                 url: '/updateAddress',
                 method: 'PUT',
@@ -509,7 +519,6 @@
             const userId = $('#userId').val()
 
             if (firstName && lastName && mobileNumber && houseNo && area && state && pinCode) {
-                console.log(firstName)
                 $.ajax({
                     url: '/getAddress',
                     method: 'POST',

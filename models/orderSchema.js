@@ -67,6 +67,10 @@ const orderSchema = new Schema({
         enum: ['success', 'failed'], 
         default: 'success' 
     },
+    paymentFailedAt: {
+        type: Date,
+        default:null
+    },
     createdOn: {
         type: Date,
         default: Date.now,
@@ -77,6 +81,15 @@ const orderSchema = new Schema({
         default: false
     }
 })
+
+
+orderSchema.pre('save', function(next) {
+    if (this.isModified('paymentStatus') && this.paymentStatus === 'failed' && !this.paymentFailedAt) {
+        this.paymentFailedAt = new Date();
+    }
+    next();
+});
+
 
 const Order = mongoose.model("Order", orderSchema)
 module.exports = Order

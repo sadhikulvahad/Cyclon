@@ -95,6 +95,46 @@
     .continue-shopping {
         margin-top: -90px;
     }
+
+    @media (max-width: 768px) {
+
+        .cart-item {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .product-details {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            justify-content: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .cart-summary {
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .continue-shopping {
+            margin-top: 20px;
+        }
+
+        .product-description {
+            display: -webkit-box;
+            display: box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            -webkit-line-clamp: 12;
+            line-clamp: 12;
+            max-height: calc(12 * 1em);
+        }
+    }
 </style>
 
 
@@ -111,7 +151,7 @@
         <div class="product-details">
             <div>
                 <h5>{{this.productId.productName}}</h5>
-                <p>{{this.productId.description}}</p>
+                <p class="product-description">{{this.productId.description}}</p>
                 {{#if this.productId.quantity}}
                 <p style="color: green;">In stock</p>
                 {{else}}
@@ -125,7 +165,6 @@
                     <input type="text" id="quantity-{{this.productId._id}}" value="{{this.quantity}}" readonly>
                     <button class="btn btn-outline-secondary">+</button>
                 </div>
-                <div id="error-message-{{this.productId._id}}" style="color: red;"></div>
                 {{#if this.productId.isBlocked}}
                 <p style="color: red;">Product Unavailable</p>
                 {{else}}
@@ -168,6 +207,8 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script>
 
@@ -188,7 +229,7 @@
                         document.getElementById('totalPrice').textContent = `₹${response.totalAmount}`
                     }
                     if (response.error) {
-                        document.getElementById(`error-message-${productId}`).textContent = `${response.error}`
+                        toastr.error(response.error, 'Error')
                     }
                 },
                 error: function (error) {

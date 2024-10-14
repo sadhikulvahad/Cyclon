@@ -6,6 +6,29 @@
     <title>Order Placed Successfully</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+            background-color: #eaf8f3;
+            font-family: Arial, sans-serif;
+        }
+
+        @keyframes scale-in {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
         .success-icon {
             width: 80px;
             height: 80px;
@@ -15,23 +38,103 @@
             justify-content: center;
             align-items: center;
             margin: 0 auto 20px;
+            animation: scale-in 0.5s ease-in-out;
         }
+
         .success-icon::after {
             content: '\2714';
             font-size: 40px;
             color: white;
         }
+
+        h2 { animation: fade-in 1s ease-in-out; }
+        .btn-secondary { animation: fade-in 1.5s ease-in-out; }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .delivery-scene {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 100px;
+        }
+
+        .van {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 180px;
+            height: 90px;
+            animation: van-move 8s infinite ease-in-out;
+        }
+
+        .package {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background-color: #8B4513;
+        }
+
+        @keyframes van-move {
+            0% { transform: translateX(-120%); }
+            40% { transform: translateX(-10%); }
+            50% { transform: translateX(-10%); }
+            100% { transform: translateX(120%); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="row justify-content-center mt-5">
+        <div class="row justify-content-center">
             <div class="col-md-6 text-center">
-                <div class="success-icon"></div>
-                <h2 class="mb-4">Your Order Placed Successfully</h2>
-                <a href="/shop" class="btn btn-secondary">Back To Shop</a>
+                <div class="card">
+                    <div class="success-icon"></div>
+                    <h2 class="mb-4">Your Order Placed Successfully</h2>
+                    <a href="/shop" class="btn btn-secondary">Back To Shop</a>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="delivery-scene">
+        <svg class="van" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Van body -->
+            <rect x="20" y="40" width="160" height="50" fill="#4A90E2" rx="10" ry="10"/>
+            <rect x="20" y="70" width="160" height="20" fill="#4A90E2"/>
+            
+            <!-- Van front -->
+            <path d="M20,90 Q20,40 50,40 L50,90 Z" fill="#3A78C2"/>
+            
+            <!-- Windows -->
+            <rect x="55" y="50" width="30" height="20" fill="#B3E5FC" rx="5" ry="5"/>
+            <rect x="95" y="50" width="30" height="20" fill="#B3E5FC" rx="5" ry="5"/>
+            <rect x="135" y="50" width="30" height="20" fill="#B3E5FC" rx="5" ry="5"/>
+            
+            <!-- Wheels -->
+            <circle cx="50" cy="90" r="10" fill="#333"/>
+            <circle cx="150" cy="90" r="10" fill="#333"/>
+            
+            <!-- Details -->
+            <rect x="25" y="45" width="20" height="5" fill="#FFF"/>
+        </svg>
+        <div class="package" id="package"></div>
+    </div>
+
+    <script>
+        // Simple logic to hide the package after a delay
+        setTimeout(() => {
+            const packageElement = document.getElementById('package');
+            packageElement.style.display = 'none'; // Hide the package
+        }, 4000); // Adjust time to match when the van is near the package
+    </script>
 </body>
 </html>

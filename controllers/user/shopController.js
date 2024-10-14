@@ -28,7 +28,7 @@ const getProduct = async (req, res) => {
                 isBlocked: false,
                 $or: [
                     { productName: { $regex: ".*" + search + ".*", $options: 'i' } },
-                    { brand: { $regex: ".*" + search + ".*", $options: 'i' } }
+                    { brand: { $regex: ".*" + search + ".*", $options: 'i' } },
                 ],
             };
 
@@ -51,7 +51,7 @@ const getProduct = async (req, res) => {
                         filterCriteria.salePrice['$gte'] = min;
                         filterCriteria.salePrice['$lte'] = max;
                     } else {
-                        filterCriteria.salePrice['$gte'] = min; // For ranges like '15000+'
+                        filterCriteria.salePrice['$gte'] = min; 
                     }
                 });
             }
@@ -133,7 +133,7 @@ const getProduct = async (req, res) => {
                         filterCriteria.salePrice['$gte'] = min;
                         filterCriteria.salePrice['$lte'] = max;
                     } else {
-                        filterCriteria.salePrice['$gte'] = min; // For ranges like '15000+'
+                        filterCriteria.salePrice['$gte'] = min; 
                     }
                 });
             }
@@ -176,7 +176,6 @@ const getProduct = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error)
         res.redirect("/shop")
     }
 }

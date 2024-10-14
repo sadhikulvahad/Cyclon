@@ -1,5 +1,4 @@
 <style>
-    /* Main container for order details */
     .order-page {
         display: flex;
         justify-content: space-between;
@@ -11,7 +10,6 @@
         background-color: #f3f4f7;
     }
 
-    /* Styling the shipping address section */
     .shipping-address {
         flex: 1;
         background-color: #f9f9f9;
@@ -21,7 +19,6 @@
         transition: box-shadow 0.3s ease;
     }
 
-    /* Styling the order details section */
     .order-details {
         flex: 2;
         background-color: #fff;
@@ -31,7 +28,6 @@
         transition: box-shadow 0.3s ease;
     }
 
-    /* Add shadow hover effect */
     .shipping-address:hover,
     .order-details:hover {
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
@@ -88,7 +84,6 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* Aligning the status section better */
     .order-status {
         display: flex;
         justify-content: space-between;
@@ -96,7 +91,6 @@
         gap: 20px;
     }
 
-    /* Button styling */
     .update-status-btn {
         padding: 10px 20px;
         background-color: #2196f3;
@@ -111,7 +105,6 @@
         background-color: #1976d2;
     }
 
-    /* Mobile responsiveness */
     @media (max-width: 768px) {
         .order-page {
             flex-direction: column;
@@ -163,7 +156,6 @@
                     <img src="/uploads/resized/{{this.product.productImages.[0]}}" alt="{{this.name}}"
                         class="product-image">
                     <p>Quantity: {{this.quantity}}</p>
-                    {{!-- <p>{{this.specs}}</p> --}}
                 </div>
             </div>
             {{/each}}
@@ -184,13 +176,11 @@
                 <option value="delivered" {{#if (eq orders.status 'delivered' )}}selected{{/if}}>Delivered</option>
                 <option value="cancelled" {{#if (eq orders.status 'cancelled' )}}selected{{/if}}>Cancelled</option>
 
-                {{!-- Show "Return Request" option if it's in "Return Request" state --}}
                 {{#if (eq orders.status 'return Request')}}
                 <option value="return Request" selected>Return Request</option>
                 <option value="returned">Returned</option>
                 {{/if}}
 
-                {{!-- Show "Returned" if the order is already marked as returned --}}
                 {{#if (eq orders.status 'returned')}}
                 <option value="returned" selected>Returned</option>
                 {{/if}}
@@ -206,7 +196,6 @@
     orderStatus.addEventListener('change', async (event) => {
         const updatedStatus = event.target.value
         const orderId = event.target.getAttribute('data-order-id');
-        console.log(orderId)
         const response = await fetch('/admin/order-status', {
             method: 'POST',
             headers: {

@@ -6,7 +6,7 @@ const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const { jsPDF } = require("jspdf")
 const { success } = require("../user/authController")
-const ExcelJS = require('exceljs').jsPDF
+const ExcelJS = require('exceljs')
 
 require('jspdf-autotable');
 
@@ -109,7 +109,6 @@ const downloadPdf = async (req, res) => {
     try {
         let query = {};
 
-        // Set up the query based on the filter type
         if (filterType === 'daily') {
             const startOfDay = new Date();
             startOfDay.setHours(0, 0, 0, 0);
@@ -132,23 +131,20 @@ const downloadPdf = async (req, res) => {
 
         const orders = await Order.find(query).populate('userId');
 
-        // Initialize jsPDF
         const doc = new jsPDF();
 
-        // Title
         doc.setFontSize(25);
         doc.text('Sales Report', 10, 10);
         doc.setFontSize(12);
 
-        // Add table with autoTable
         const tableData = orders.map((order, index) => ([
-            index + 1, // Order ID
-            order.userId.name || 'N/A', // Username
-            `₹${order.totalPrice}`, // Total Amount
-            `₹${order.finalPrice}`, // Final Amount
-            order.status, // Status
-            order.paymentMethod, // Payment Method
-            new Date(order.createdOn).toLocaleString() // Created At
+            index + 1, 
+            order.userId ? order.userId.name : 'N/A',
+            `₹${order.totalPrice}`, 
+            `₹${order.finalPrice}`, 
+            order.status, 
+            order.paymentMethod, 
+            new Date(order.createdOn).toLocaleString() 
         ]));
 
         const tableColumn = [
@@ -164,22 +160,20 @@ const downloadPdf = async (req, res) => {
         doc.autoTable({
             head: [tableColumn],
             body: tableData,
-            startY: 30, // Starting position for the table
-            margin: { horizontal: 10 }, // Margin around the table
+            startY: 30,
+            margin: { horizontal: 10 }, 
             styles: {
                 overflow: 'linebreak',
                 cellWidth: 'auto',
                 minCellHeight: 10
             },
             didParseCell: function (data) {
-                // Custom styling can be added here if needed
                 if (data.section === 'body') {
-                    data.cell.styles.valign = 'middle'; // Vertical alignment
+                    data.cell.styles.valign = 'middle'; 
                 }
             }
         });
 
-        // Send PDF as a response
         const pdfBuffer = doc.output('arraybuffer');
         res.setHeader('Content-Disposition', 'attachment; filename=sales-report.pdf');
         res.setHeader('Content-Type', 'application/pdf');
@@ -198,7 +192,6 @@ const downloadExcel = async (req, res) => {
     try {
         let query = {};
 
-        // Set up the query based on the filter type
         if (filterType === 'daily') {
             const startOfDay = new Date();
             startOfDay.setHours(0, 0, 0, 0);
@@ -221,14 +214,11 @@ const downloadExcel = async (req, res) => {
 
         const orders = await Order.find(query).populate('userId');
 
-        // Create a new workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sales Report');
 
-        // Add headers
         worksheet.addRow(['Order ID', 'Username', 'Total Amount', 'Final Amount', 'Status', 'Payment Method', 'Created At']);
 
-        // Add data
         orders.forEach((order, index) => {
             worksheet.addRow([
                 index + 1,
@@ -241,19 +231,18 @@ const downloadExcel = async (req, res) => {
             ]);
         });
 
-        // Set response headers
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=sales-report.xlsx');
 
-        // Write to response
         await workbook.xlsx.write(res);
-        res.end(); // End the response
+        res.end(); 
 
     } catch (error) {
         console.error("Error generating Excel:", error);
         res.status(500).json({ message: 'Error generating Excel report', error: error.message });
     }
-}
+};
+
 
 
 
@@ -305,7 +294,6 @@ const topSelling = async (req, res) => {
             { $limit: 10 }
         ]);
 
-        // Top selling brands
         const topSellingBrands = await Order.aggregate([
             { $unwind: "$orderdItems" },
             {
@@ -334,7 +322,6 @@ const topSelling = async (req, res) => {
             { $limit: 10 }
         ]);
 
-        // Top selling types (categories)
         const topSellingTypes = await Order.aggregate([
             { $unwind: "$orderdItems" },
             {

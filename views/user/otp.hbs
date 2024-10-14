@@ -6,7 +6,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/stylesheets/OTP.css">
+
+    <style>
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 350px;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        .otp-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .otp-input input:last-child {
+            margin-right: 0;
+        }
+
+        @media (max-width: 576px) {
+            .otp-input input {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .btn-primary {
+                width: 80px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .otp-input input {
+                width: 55px;
+                height: 55px;
+                font-size: 22px;
+            }
+
+            .btn-primary {
+                width: 120px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .otp-input input {
+                width: 65px;
+                height: 65px;
+                font-size: 26px;
+            }
+
+            .btn-primary {
+                width: 140px;
+            }
+        }
+
+        .btn-primary {
+            width: 100px;
+        }
+
+        .btn-link {
+            padding-left: 0;
+        }
+
+        .card-title {
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 100px;
+            height: auto;
+        }
+
+        .logo {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #timer {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 
 <body>
@@ -27,18 +129,17 @@
                 <input type="text" id="otp2" name="otp" class="form-control" required maxlength="1" pattern="\d*">
                 <input type="text" id="otp3" name="otp" class="form-control" required maxlength="1" pattern="\d*">
                 <input type="text" id="otp4" name="otp" class="form-control" required maxlength="1" pattern="\d*">
-                <button class="btn btn-primary" type="submit">Submit</button>
             </form>
             <div class="d-flex justify-content-between mt-4">
                 <button class="btn btn-link" id="resendOtpBtn" type="button" onclick="resendOTP()">Resend OTP</button>
-
+                <button class="btn btn-primary" type="submit" form="otpForm">Submit</button>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/javascripts/otp.js"></script>
     <script>
         let timerInter
 
@@ -56,7 +157,7 @@
                 if (--timer < 0) {
                     clearInterval(timerInter)
                     display.textContent = "00:00"
-                    document.querySelector("#otpForm button[type = 'submit']").disabled = true
+                    document.querySelector("#otpForm button[type='submit']").disabled = true
                     document.querySelector("#resendOtpBtn").disabled = false
                     Swal.fire({
                         icon: "info",
@@ -68,17 +169,17 @@
         }
 
         window.onload = function () {
-            const fiveMinutes = 60 * 1,
+            const oneMinute = 60 * 1,
                 display = document.querySelector("#time")
-            startTimer(fiveMinutes, display)
+            startTimer(oneMinute, display)
         }
 
         document.querySelector("#resendOtpBtn").addEventListener("click", function () {
             resendOTP();
 
             startTimer(60, document.querySelector("#time"));
-            document.querySelector("#otpForm button[type='submit']").disabled = false; 
-            this.disabled = true; 
+            document.querySelector("#otpForm button[type='submit']").disabled = false;
+            this.disabled = true;
         });
 
         function validateOTPForm() {
@@ -151,13 +252,35 @@
                         Swal.fire({
                             icon: "error",
                             title: "Error",
-                            text: "An error occured while resending OTP, Please try again"
+                            text: "An error occurred while resending OTP, Please try again"
                         })
                     }
                 }
             })
             return false
         }
+
+        // Select all OTP input fields
+        const otpInputs = document.querySelectorAll('.otp-input input');
+
+        // Add event listener to each input
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                // Move to next input if current input is filled
+                if (input.value.length === 1) {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                }
+
+                // Move to previous input if backspace is pressed and field is empty
+                if (e.inputType === 'deleteContentBackward' && input.value === '') {
+                    if (index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                }
+            });
+        });
 
     </script>
 </body>

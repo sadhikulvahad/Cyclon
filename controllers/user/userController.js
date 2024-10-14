@@ -61,7 +61,6 @@ const loadHomepage = async (req, res) => {
             return res.render("user/home", { product: topSellingProducts[0] });
         }
     } catch (error) {
-        console.log("Home page is not found", error)
         res.status(500).send("Server error")
     }
 }

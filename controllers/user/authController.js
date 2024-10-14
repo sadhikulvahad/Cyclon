@@ -13,7 +13,6 @@ const loadSignuppage = async (req, res) => {
             res.redirect('/')
         }
     } catch (error) {
-        console.log("product page error", error)
         res.status(500).send("server error")
     }
 }
@@ -82,7 +81,6 @@ const signup = async (req, res) => {
         res.redirect("/otp")
         console.log("OTP send", otp)
     } catch (error) {
-        console.log("signup error", error)
         res.render("user/signup")
     }
 }
@@ -97,7 +95,6 @@ const loadLoginpage = async (req, res) => {
             return res.render("user/login")
         }
     } catch (error) {
-        console.log("product page error", error)
         res.redirect("/login")
     }
 }
@@ -127,7 +124,6 @@ const login = async (req, res) => {
         req.session.user = findUser._id
         res.redirect('/')
     } catch (error) {
-        console.log("login error", error)
         res.redirect("user/login", { error: "there is some error in your login" })
     }
 }
@@ -142,7 +138,6 @@ const loadOtppage = async (req, res) => {
         }
 
     } catch (error) {
-        console.log("product page error", error)
         res.status(500).send("server error")
     }
 }
@@ -168,6 +163,15 @@ const verifyOtp = async (req, res) => {
 
             const refferedUser = await User.findOne({ referalCode: req.session.userData.referralCode })
 
+            
+
+            const passwordHash = await securePassword(user.password)
+            const saveUserData = new User({
+                name: user.name,
+                email: user.email,
+                password: passwordHash,
+            })
+
             if (refferedUser) {
                 refferedUser.wallet = CalculateTotalWallet(refferedUser.wallet, 300);
 
@@ -184,19 +188,12 @@ const verifyOtp = async (req, res) => {
                     amount: 100,
                     description: `Reward get by reffering`
                 });
+
+                saveUserData.wallet = 100
                 
             }
-
-            const passwordHash = await securePassword(user.password)
-            const saveUserData = new User({
-                name: user.name,
-                email: user.email,
-                password: passwordHash,
-                wallet: CalculateTotalWallet(0, 100)
-            })
             
             await saveUserData.save()
-
 
             req.session.userOtp = null
             req.session.userData = null
@@ -206,7 +203,6 @@ const verifyOtp = async (req, res) => {
             res.status(500).json({ success: false, message: "Invalid OTP, please try again" })
         }
     } catch (error) {
-        console.log(error, "error verifying OTP ")
         res.status(500).json({ success: false, message: "An error occured" })
     }
 }
@@ -230,7 +226,6 @@ const resendOtp = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error, "Eoor in resending otp");
         return res.status(500).json({ success: false, message: "An error occurred while resending OTP" })
     }
 }
@@ -242,7 +237,6 @@ const loadForgotPass = async (req, res) => {
             return res.render("user/forgotPass")
         }
     } catch (error) {
-        console.log("product page error", error)
         res.redirect("/login")
     }
 }
@@ -269,12 +263,10 @@ const checkMail = async (req, res) => {
                 res.render("user/forgotPass", { error: "Error in sending OTP" });
             }
         } else {
-            console.log('No account with that email exists.')
             return res.render("user/forgotPass", { error: 'No account with that email exists.' });
         }
     } catch (error) {
-        console.log(error, "Error sending OTP");
-        res.status(500).json({ success: false, message: "An error occurred" });
+        res.status(500).json({ success: false, message: "An error occurred while sending OTP" });
     }
 };
 
@@ -285,7 +277,6 @@ const forgotOtp = async (req, res) => {
             return res.render("user/forgotOtp")
         }
     } catch (error) {
-        console.log("product page error", error)
         res.redirect("/login")
     }
 }
@@ -294,9 +285,8 @@ const forgotOtp = async (req, res) => {
 const verifyForgot = async (req, res) => {
     try {
         const { otp } = req.body;
-        console.log("otp:::", otp)
+        console.log("otp:", otp)
         if (otp.trim() === req.session.userOtp.trim() && Date.now() < req.session.otpExpires) {
-            console.log(req.session.email)
             req.session.userData = await User.findOne({ email: req.session.email });
             req.session.userOtp = null;
             req.session.otpExpires = null;
@@ -305,7 +295,6 @@ const verifyForgot = async (req, res) => {
             res.status(400).json({ success: false, message: "Invalid OTP or OTP expired" });
         }
     } catch (error) {
-        console.error("Error verifying OTP:", error);
         res.status(500).json({ success: false, message: "An error occurred" });
     }
 };
@@ -347,7 +336,6 @@ const saveNewPassword = async (req, res) => {
 
         res.status(200).json({ success: true, message: "Password updated successfully." });
     } catch (error) {
-        console.error("Error updating password:", error);
         res.status(500).json({ success: false, message: "An error occurred. Please try again." });
     }
 };
@@ -358,7 +346,6 @@ const logout = async (req, res) => {
     try {
         req.session.destroy(err => {
             if (err) {
-                console.log("session destroy error", err);
                 return res.redirect("/")
             }
             return res.redirect("/login")

@@ -1,115 +1,64 @@
+<link rel="stylesheet" href="/stylesheets/home.css">
+{{> user/header}}
 
-    <link rel="stylesheet" href="/stylesheets/home.css">
-    <style>
-        .banner {
-            position: relative;
-            height: 100vh; /* Ensure banner fills the viewport */
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align content at the top */
-            text-align: center;
-        }
-
-        .shop-button-container {
-            background-color: rgb(125, 142, 157);
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-top: 10px; /* Adjust the distance from the top if needed */
-        }
-        .shop-button-container:hover{
-            background-color: rgb(37, 41, 44);
-        }
-        
-        .shop-btn {
-            background-color: #508a04;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .shop-btn:hover {
-            background-color: #c03b25;
-            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
-        }
-    </style>
-
-    <!-- Header Section -->
-    {{> user/header}}
-
-    <!-- Banner Section -->
-    <section class="banner">
-        <div class="shop-button-container">
-            <a href="/shop" class="btn shop-btn">Shop</a>
+<section class="banner">
+    <div class="shop-button-container">
+        <a href="/shop" class="btn shop-btn">Shop</a>
+    </div>
+    <div class="container banner-container">
+        <div class="banner-text">
+            <h1>Top Selling product</h1>
+            <p>{{product.description}}</p>
+            <a href="/product/{{product._id}}"><button class="btn">Buy Now</button></a>
         </div>
-        <div class="container banner-container">
-            <div class="banner-text">
-                <h1>Top Selling product</h1>
-                <p>{{product.description}}</p>
-                <a href="/product/{{product._id}}"><button class="btn">Buy Now</button></a>
+        <div class="banner-image">
+            <img src="/uploads/resized/{{product.productImages.[0]}}" alt="New Model Cycle">
+        </div>
+    </div>
+</section>
+
+<section class="products">
+    <div class="container">
+        <h2>Our cycle</h2>
+        <div class="product-item">
+            <div class="product-image">
+                <img src="/images/marin 1.png" alt="Cycle 1">
             </div>
-            <div class="banner-image">
-                <img src="/uploads/resized/{{product.productImages.[0]}}" alt="New Model Cycle">
+            <div class="product-text">
+                <h3>Cycles</h3>
+                <p>This cycle provides the best experience for all the riders who love the outdoors.</p>
+                <p class="price">Price: ₹20000</p>
             </div>
         </div>
-    </section>
-
-    <!-- Our Cycle Section -->
-    <section class="products">
-        <div class="container">
-            <h2>Our cycle</h2>
-            <div class="product-item">
-                <div class="product-image">
-                    <img src="/images/marin 1.png" alt="Cycle 1">
-                </div>
-                <div class="product-text">
-                    <h3>Cycles</h3>
-                    <p>This cycle provides the best experience for all the riders who love the outdoors.</p>
-                    <button class="btn">Buy Now</button>
-                    <p class="price">Price: ₹20000</p>
-                </div>
+        <div class="product-item">
+            <div class="product-image">
+                <img src="/images/marin 1.png" alt="Stylish Cycle">
             </div>
-            <div class="product-item">
-                <div class="product-image">
-                    <img src="/images/marin 1.png" alt="Stylish Cycle">
-                </div>
-                <div class="product-text">
-                    <h3>Stylish Cycle</h3>
-                    <p>Modern design with the latest features to give you an edge on the road.</p>
-                    <button class="btn">Buy Now</button>
-                    <p class="price">Price: ₹25000</p>
-                </div>
-            </div>
-            <div class="product-item">
-                <div class="product-image">
-                    <img src="/images/marin 1.png" alt="Modern Cycle">
-                </div>
-                <div class="product-text">
-                    <h3>Modern Cycle</h3>
-                    <p>Engineered for performance, this cycle is built to handle all terrains.</p>
-                    <button class="btn">Buy Now</button>
-                    <p class="price">Price: ₹3000</p>
-                </div>
+            <div class="product-text">
+                <h3>Stylish Cycle</h3>
+                <p>Modern design with the latest features to give you an edge on the road.</p>
+                <p class="price">Price: ₹25000</p>
             </div>
         </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="about">
-        <div class="container about-container">
-            <h2>About Our Cycle Store</h2>
-            <img src="/images/marin.jpg" alt="About Our Cycle Store">
-            <p>Our store offers a wide range of cycles for every type of rider. Whether you're looking for a comfortable
-                ride in the city or an adventure in the mountains, we have the perfect cycle for you.</p>
+        <div class="product-item">
+            <div class="product-image">
+                <img src="/images/marin 1.png" alt="Modern Cycle">
+            </div>
+            <div class="product-text">
+                <h3>Modern Cycle</h3>
+                <p>Engineered for performance, this cycle is built to handle all terrains.</p>
+                <p class="price">Price: ₹3000</p>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Footer Section -->
-    {{> user/footer}}
+<section class="about">
+    <div class="container about-container">
+        <h2>About Our Cycle Store</h2>
+        <img src="/images/marin.jpg" alt="About Our Cycle Store">
+        <p>Our store offers a wide range of cycles for every type of rider. Whether you're looking for a comfortable ride in the city or an adventure in the mountains, we have the perfect cycle for you.</p>
+    </div>
+</section>
+
+{{> user/footer}}

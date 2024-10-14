@@ -43,7 +43,7 @@ const cartSchema = new Schema({
 
 cartSchema.methods.calculateTotalPrice = function() {
     this.totalPrice = this.items.reduce((total, item) => {
-        return total + (item.price * item.quantity); // Adjust based on your schema
+        return total + (item.price * item.quantity); 
     }, 0);
 };
 

@@ -12,7 +12,6 @@
         .navbar-brand {
             display: flex;
             align-items: center;
-            margin-right: auto;
         }
 
         .navbar-nav {
@@ -27,8 +26,14 @@
             font-size: 1.5rem;
         }
 
+        .search-container {
+            display: flex;
+            justify-content: center;
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
         .search-input {
-            width: 300px; /* Adjust width as needed */
             height: 40px;
             padding: 10px;
         }
@@ -38,11 +43,93 @@
             padding: 10px 20px;
         }
 
-        /* Additional styling to center the search bar */
-        .search-container {
-            display: flex;
-            justify-content: center;
-            flex-grow: 1; /* Allow it to take available space */
+        #menuDropdown {
+            margin-left: auto;
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar-brand img {
+                width: 120px;
+                height: auto;
+            }
+
+            .search-input {
+                width: 150px;
+            }
+
+            .search-button {
+                padding: 10px;
+            }
+
+            .hide-on-mobile {
+                display: none !important;
+            }
+
+            .navbar>.container-fluid {
+                flex-wrap: nowrap;
+            }
+
+            .search-container {
+                margin: 0 5px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .navbar-brand img {
+                width: 100px;
+            }
+
+            .search-input {
+                width: 120px;
+            }
+
+            .search-button {
+                padding: 5px 10px;
+            }
+
+            .search-container {
+                margin: 0 2px;
+            }
+        }
+
+        @media (max-width: 459.98px) {
+            .navbar-brand img {
+                width: 80px;
+            }
+
+            .search-input {
+                width: 80px;
+                font-size: 0.8rem;
+            }
+
+            .search-button {
+                padding: 2px 5px;
+                font-size: 0.8rem;
+            }
+
+            #menuDropdown .btn {
+                padding: 0.25rem 0.5rem;
+            }
+
+            .navbar-toggler-icon {
+                width: 1em;
+                height: 1em;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .search-input {
+                width: 300px;
+            }
+
+            #menuDropdown {
+                display: none;
+            }
+        }
+
+        .dropdown-menu-end {
+            right: 0;
+            left: auto;
         }
     </style>
 </head>
@@ -53,42 +140,65 @@
             <a class="navbar-brand" href="/">
                 <img src="/images/Logo.png" alt="Cyclon Logo" width="150" height="50" class="d-inline-block align-top">
             </a>
-            <div class="collapse navbar-collapse d-flex">
-                <div class="search-container">
-                    <form class="d-flex" action="/shop" method="GET">
-                        <input class="form-control me-2 search-input" type="search" placeholder="Search" aria-label="Search"
-                            name="search" value="{{search}}">
-                        <button class="btn btn-outline-success search-button" type="submit">Search</button>
-                    </form>
-                </div>
-
-                <div class="navbar-nav">
+            <div class="search-container">
+                <form class="d-flex w-100" action="/shop" method="GET">
+                    <input class="form-control me-2 search-input" type="search" placeholder="Search" aria-label="Search"
+                        name="search" value="{{search}}">
+                    <button class="btn btn-outline-success search-button" type="submit">Search</button>
+                </form>
+            </div>
+            <div class="dropdown" id="menuDropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                     {{#if userData}}
-                    <!-- User logged in -->
-                    <div class="dropdown">
-                        <button data-bs-toggle="dropdown" class="border-0 bg-transparent">
-                            <i class="bi bi-person fs-2"></i>
-                        </button>
-                        <ul class="dropdown-menu" style="z-index: 1000;">
-                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                            <li><a class="dropdown-item" href="/orders">Orders</a></li>
-                            <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
-                            <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
-                            <li><a class="dropdown-item" href="/coupons">Coupons</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
-                        </ul>
-                    </div>
-                    <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
-                    <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
-
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="/orders">Orders</a></li>
+                    <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
+                    <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
+                    <li><a class="dropdown-item" href="/coupons">Coupons</a></li>
+                    <li><a class="dropdown-item"  href="/cart">Your Cart</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                            data-bs-target="#logoutModal">Logout</a></li>
                     {{else}}
-                    <!-- User not logged in -->
-                    <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
-                    <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
-                    <a class="nav-link" href="/login">Login</a>
-                    <a class="nav-link" href="/signup">Signup</a>
+                    <li><a class="dropdown-item" href="/login">Login</a></li>
+                    <li><a class="dropdown-item" href="/signup">Signup</a></li>
                     {{/if}}
+                </ul>
+            </div>
+            <div class="navbar-nav ms-auto d-none d-lg-flex">
+                {{#if userData}}
+                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
+                <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person fs-2"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                        <li><a class="dropdown-item" href="/orders">Orders</a></li>
+                        <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
+                        <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
+                        <li><a class="dropdown-item" href="/coupons">Coupons</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal">Logout</a></li>
+                    </ul>
                 </div>
+                {{else}}
+                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i></a>
+                <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" style="color:red;"></i></a>
+                <a class="nav-link" href="/login">Login</a>
+                <a class="nav-link" href="/signup">Signup</a>
+                {{/if}}
             </div>
         </div>
     </nav>
@@ -118,25 +228,24 @@
             const suggestionBox = document.createElement('div');
             suggestionBox.classList.add('suggestions');
 
-            searchInput.parentElement.appendChild(suggestionBox); // Append suggestions below input
+            searchInput.parentElement.appendChild(suggestionBox);
 
             searchInput.addEventListener('input', function () {
                 const query = this.value;
 
                 if (query.length > 0) {
-                    // Make an AJAX request to get search suggestions
                     fetch(`/search-suggestions?query=${query}`)
                         .then(response => response.json())
                         .then(suggestions => {
-                            suggestionBox.innerHTML = ''; // Clear previous suggestions
+                            suggestionBox.innerHTML = '';
                             suggestions.forEach(suggestion => {
                                 const div = document.createElement('div');
-                                div.textContent = suggestion; // Replace with your suggestion property
+                                div.textContent = suggestion;
                                 suggestionBox.appendChild(div);
                             });
                         });
                 } else {
-                    suggestionBox.innerHTML = ''; // Clear if input is empty
+                    suggestionBox.innerHTML = '';
                 }
             });
         });

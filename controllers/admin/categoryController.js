@@ -26,8 +26,6 @@ const addCategory = async (req, res) => {
             res.redirect('/admin/login')
         }
     } catch (error) {
-        console.error('Server Error:', error.message); 
-        console.error(error.stack);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -38,7 +36,6 @@ const getCategory = async (req, res) => {
         const types = await Category.find({ categoryType: 'type' })
         res.render("admin/categories", { brands, types })
     } catch (error) {
-        console.error('Server Error:', error.message);
         res.status(500).send("Internal server error");
     }
 }
@@ -79,7 +76,6 @@ const editCategory = async (req, res) => {
             res.redirect('/admin/login')
         }
     } catch (error) {
-        console.error('Server Error:', error.message);
         return res.status(500).json({ error: "Internal server error" })
     }
 }
@@ -100,7 +96,6 @@ const toggleCategoryStatus = async (req, res) => {
         await category.save();
         return res.json({ message: `Category ${category.isListed ? 'activated' : 'deactivated'} successfully` });
     } catch (error) {
-        console.error(error);
         return res.status(500).json({ error: 'An error occurred' });
     }
 }

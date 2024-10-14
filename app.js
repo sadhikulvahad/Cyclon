@@ -13,6 +13,8 @@ const hbs = require('hbs')
 const session = require("express-session")
 const noCache = require("nocache")
 const moment = require('moment')
+const cron = require('node-cron');
+const Order = require('./models/orderSchema')
 
 var userRouter = require('./routes/userRouter');
 const authRouter = require('./routes/authRouter')
@@ -27,6 +29,11 @@ hbs.registerHelper('eq', function (a, b) {
   return a == b;
 });
 
+hbs.registerHelper('ne', function(a, b) {
+  return a != b;
+});
+
+
 hbs.registerHelper('formatDate', function (date) {
   return moment(date).format('YYYY-MM-DD  HH:mm:ss')
 })
@@ -35,11 +42,11 @@ hbs.registerHelper('json', function (context) {
   return JSON.stringify(context);
 });
 
-hbs.registerHelper('increment', function(value) {
+hbs.registerHelper('increment', function (value) {
   return parseInt(value) + 1;
 });
 
-hbs.registerHelper('maxOffer', function(productOffer, brandOffer){
+hbs.registerHelper('maxOffer', function (productOffer, brandOffer) {
   return Math.max(productOffer, brandOffer)
 })
 
@@ -47,8 +54,28 @@ hbs.registerHelper('gt', function (value1, value2) {
   return value1 > value2;
 });
 
-hbs.registerHelper('or', function(arg1, arg2) {
+hbs.registerHelper('lt', function (value1, value2) {
+  return value1 < value2;
+});
+
+hbs.registerHelper('or', function (arg1, arg2) {
   return arg1 || arg2;
+});
+
+hbs.registerHelper('dec', function (value) {
+  return value - 1;
+});
+
+hbs.registerHelper('inc', function (value) {
+  return value + 1;
+});
+
+hbs.registerHelper('range', function (min, max) {
+  const result = [];
+  for (let i = min; i <= max; i++) {
+    result.push(i);
+  }
+  return result;
 });
 
 
@@ -68,7 +95,6 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  // store: MongoStore.create({ mongoUrl: 'mongodb://localhost:27017/project' })
 }))
 
 const razorpay = new Razorpay({
@@ -108,6 +134,26 @@ app.use(function (err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('user/error');
+});
+
+cron.schedule('*/2 * * * *', async () => {
+  const now = new Date();
+  const twentyFourHoursAgo = new Date(now.getTime() - 2 * 60 * 1000);
+
+  try {
+      const ordersToCancel = await Order.find({
+          paymentStatus: 'failed',
+          paymentFailedAt: { $lte: twentyFourHoursAgo },
+          status: { $ne: 'cancelled' }
+      });
+
+      for (const order of ordersToCancel) {
+          order.status = 'cancelled';
+          await order.save();
+      }
+  } catch (error) {
+      console.error('Error updating orders:', error);
+  }
 });
 
 

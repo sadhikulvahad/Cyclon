@@ -16,7 +16,6 @@
 
         .input-container input {
             padding-right: 50px;
-            /* Space for the button */
         }
 
         .input-container .btn-toggle {
@@ -41,6 +40,100 @@
             right: 0;
             top: 50%;
         }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .signup-box {
+            max-width: 100%;
+            width: 100%;
+            background-color: #ffffff;
+            border: 2px solid #ced4da;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .form-label {
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #495057;
+            text-align: left;
+            display: block;
+        }
+
+        .form-control {
+            background-color: #f5e6d6;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            height: 35px;
+        }
+
+        .btn-primary {
+            background-color: #3b4b45;
+            border: none;
+            height: 35px;
+            width: 100%;
+        }
+
+        .btn-light {
+            background-color: #f5e6d6;
+            border-color: #ced4da;
+        }
+
+        .btn-light img {
+            margin-right: 8px;
+        }
+
+        .text-center p {
+            margin: 8px 0;
+        }
+
+        .form-text-left {
+            text-align: left;
+        }
+
+        .form-text-right {
+            text-align: right;
+        }
+
+        .form-text-center {
+            text-align: center;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .logo-container img {
+            width: 150px;
+            height: auto;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.75rem;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .signup-box {
+                width: 400px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .signup-box {
+                width: 500px;
+            }
+
+            .logo-container img {
+                width: 200px;
+            }
+        }
     </style>
 </head>
 
@@ -50,74 +143,70 @@
     </div>
 
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
-        <div class="text-center">
-            <div class="signup-box p-4 rounded">
-                <h2>SignUp</h2>
-                <form id="signform" method="post" action="/signup">
-                    {{#if exist}}
-                    <div class="alert alert-danger">
-                        {{exist}}
-                    </div>
-                    {{/if}}
+        <div class="signup-box p-4 rounded">
+            <h2 class="text-center">SignUp</h2>
+            <form id="signform" method="post" action="/signup">
+                {{#if exist}}
+                <div class="alert alert-danger">
+                    {{exist}}
+                </div>
+                {{/if}}
 
-                    <div class="mb-4">
-                        <label for="fullName" class="form-label form-text-left">Full Name</label>
-                        <input type="text" class="form-control" id="fullName" placeholder="Full Name" name="name">
-                    </div>
-                    <div id="error1" class="error-message"></div>
+                <div class="mb-4">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" placeholder="Full Name" name="name">
+                </div>
+                <div id="error1" class="error-message"></div>
 
-                    <div class="mb-3">
-                        <label for="email" class="form-label form-text-left">Email</label>
-                        <input type="email" class="form-control" id="email" placeholder="Email" name="email">
-                    </div>
-                    <div id="error2" class="error-message"></div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="Email" name="email">
+                </div>
+                <div id="error2" class="error-message"></div>
 
-                    <div class="mb-3 position-relative">
-                        <label for="password" class="form-label form-text-left">Password</label>
-                        <input type="password" class="form-control" id="password" placeholder="Password"
-                            name="password">
-                        <button type="button" class="btn-toggle eye-button" onclick="togglePassword('password')">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                    <div id="error3" class="error-message"></div>
+                <div class="mb-3 position-relative">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Password" name="password">
+                    <button type="button" class="btn-toggle eye-button" onclick="togglePassword('password')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <div id="error3" class="error-message"></div>
 
-                    <div class="mb-3">
-                        <label for="confirmPassword" class="form-label form-text-left">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password"
-                            name="cPassword">
-                    </div>
-                    <div id="error4" class="error-message"></div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" name="cPassword">
+                </div>
+                <div id="error4" class="error-message"></div>
 
-                    <!-- Referral Code Input -->
-                    <div class="mb-3">
-                        <label for="referralCode" class="form-label form-text-left">Referral Code (optional)</label>
-                        <input type="text" class="form-control" id="referralCode" placeholder="Referral Code"
-                            name="referralCode">
-                    </div>
-                    <div id="error5" class="error-message"></div>
+                <div class="mb-3">
+                    <label for="referralCode" class="form-label">Referral Code (optional)</label>
+                    <input type="text" class="form-control" id="referralCode" placeholder="Referral Code" name="referralCode">
+                </div>
+                <div id="error5" class="error-message"></div>
 
-                    {{#if message}}
-                    <div class="alert alert-danger">
-                        {{message}}
-                    </div>
-                    {{/if}}
+                {{#if message}}
+                <div class="alert alert-danger">
+                    {{message}}
+                </div>
+                {{/if}}
 
-                    <div class="form-text-right mb-3">
-                        <a href="/login" class="text-muted">Login</a>
-                    </div>
-                    <div class="mb-3 d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                    <div class="form-text-center mt-2">
-                        <p>OR</p>
-                        <a href="/auth/google" class="btn btn-light border">
-                            <img src="/images/Google.png" alt="Google" style="width: 30px;">
-                            Signup with Google
-                        </a>
-                    </div>
-                </form>
-            </div>
+                <div class="form-text-right mb-3">
+                    <a href="/login" class="text-muted">Login</a>
+                </div>
+
+                <div class="mb-3 d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+
+                <div class="form-text-center mt-2">
+                    <p>OR</p>
+                    <a href="/auth/google" class="btn btn-light border">
+                        <img src="/images/Google.png" alt="Google" style="width: 30px;">
+                        Signup with Google
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -137,7 +226,6 @@
             const signform = document.getElementById("signform");
 
             if (!nameid || !emailid || !passid || !cPassid || !error1 || !error2 || !error3 || !error4 || !signform) {
-                console.log('One or more elements not found');
                 return;
             }
 

@@ -220,7 +220,6 @@
             const totalDiscount = document.getElementById('totalDiscount')
             const customDateFields = document.querySelectorAll('.custom-date');
 
-            // Show/Hide date fields based on filter type
             filterType.addEventListener('change', function () {
                 if (filterType.value === 'custom') {
                     customDateFields.forEach(field => field.classList.add('show'));
@@ -230,9 +229,9 @@
             });
 
             function initBarChart(labels, data) {
-                const ctx = document.getElementById('barChart').getContext('2d'); // Ensure this is a canvas element
+                const ctx = document.getElementById('barChart').getContext('2d'); 
                 if (barChart) {
-                    barChart.destroy(); // Destroy previous chart before creating a new one
+                    barChart.destroy(); 
                 }
                 barChart = new Chart(ctx, {
                     type: 'bar',
@@ -257,69 +256,62 @@
             }
 
             function aggregateDataForChart(orders, selectedFilter) {
-        let labels = [];
-        let salesData = [];
-        
-        // Group sales based on the filter type
-        switch (selectedFilter) {
-            case 'daily':
-                // Group sales by transaction or hour of the day
-                labels = orders.map(order => order.createdOn.slice(11, 16)); // Extract time
-                salesData = orders.map(order => order.finalPrice);
-                break;
-            
-            case 'weekly':
-                // Group sales by day of the week
-                labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                let weeklyData = new Array(7).fill(0); // One for each day
-                orders.forEach(order => {
-                    const day = new Date(order.createdOn).getDay(); // Get day of the week (0 = Sunday)
-                    weeklyData[day === 0 ? 6 : day - 1] += order.finalPrice; // Adjust for Monday-first week
-                });
-                salesData = weeklyData;
-                break;
-            
-            case 'monthly':
-                // Group sales by week of the month
-                let weeksInMonth = {};
-                orders.forEach(order => {
-                    const week = Math.ceil(new Date(order.createdOn).getDate() / 7); // Get the week of the month
-                    weeksInMonth[week] = (weeksInMonth[week] || 0) + order.finalPrice;
-                });
-                labels = Object.keys(weeksInMonth).map(week => `Week ${week}`);
-                salesData = Object.values(weeksInMonth);
-                break;
+                let labels = [];
+                let salesData = [];
 
-            case 'yearly':
-                // Group sales by month
-                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                let yearlyData = new Array(12).fill(0);
-                orders.forEach(order => {
-                    const month = new Date(order.createdOn).getMonth(); // Get month (0 = Jan)
-                    yearlyData[month] += order.finalPrice;
-                });
-                salesData = yearlyData;
-                break;
+                switch (selectedFilter) {
+                    case 'daily':
+                        labels = orders.map(order => order.createdOn.slice(11, 16)); 
+                        salesData = orders.map(order => order.finalPrice);
+                        break;
 
-            case 'custom':
-                // Group sales by day in the custom date range
-                orders.forEach(order => {
-                    const day = order.createdOn.slice(0, 10); // Extract date
-                    if (!labels.includes(day)) {
-                        labels.push(day);
-                        salesData.push(order.finalPrice);
-                    } else {
-                        const index = labels.indexOf(day);
-                        salesData[index] += order.finalPrice;
-                    }
-                });
-                break;
-        }
+                    case 'weekly':
+                        labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        let weeklyData = new Array(7).fill(0); 
+                        orders.forEach(order => {
+                            const day = new Date(order.createdOn).getDay(); 
+                            weeklyData[day === 0 ? 6 : day - 1] += order.finalPrice; 
+                        });
+                        salesData = weeklyData;
+                        break;
 
-        return { labels, salesData };
-    }
+                    case 'monthly':
+                        let weeksInMonth = {};
+                        orders.forEach(order => {
+                            const week = Math.ceil(new Date(order.createdOn).getDate() / 7); 
+                            weeksInMonth[week] = (weeksInMonth[week] || 0) + order.finalPrice;
+                        });
+                        labels = Object.keys(weeksInMonth).map(week => `Week ${week}`);
+                        salesData = Object.values(weeksInMonth);
+                        break;
 
-            // Fetch data when Apply Filter is clicked
+                    case 'yearly':
+                        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        let yearlyData = new Array(12).fill(0);
+                        orders.forEach(order => {
+                            const month = new Date(order.createdOn).getMonth(); 
+                            yearlyData[month] += order.finalPrice;
+                        });
+                        salesData = yearlyData;
+                        break;
+
+                    case 'custom':
+                        orders.forEach(order => {
+                            const day = order.createdOn.slice(0, 10); 
+                            if (!labels.includes(day)) {
+                                labels.push(day);
+                                salesData.push(order.finalPrice);
+                            } else {
+                                const index = labels.indexOf(day);
+                                salesData[index] += order.finalPrice;
+                            }
+                        });
+                        break;
+                }
+
+                return { labels, salesData };
+            }
+
             applyFilter.addEventListener('click', function () {
                 const selectedFilter = filterType.value;
                 let startDate = '';
@@ -355,15 +347,12 @@
                     .then(data => {
                         salesTable.style.display = 'table';
 
-                        // Clear table
                         salesTableBody.innerHTML = '';
 
-                        // Update total orders and revenue
                         totalOrders.textContent = data.totalOrders;
                         totalRevenue.textContent = `₹${data.totalRevenue}`;
                         totalDiscount.textContent = `₹${data.totalDiscount}`;
 
-                        // Populate table with filtered data
                         data.orders.forEach((order, index) => {
                             const row = `<tr>
                     <td>${index + 1}</td>
@@ -377,10 +366,8 @@
                             salesTableBody.insertAdjacentHTML('beforeend', row);
                         });
 
-                        // Prepare data for the chart
                         const { labels, salesData } = aggregateDataForChart(data.orders, selectedFilter);
 
-                        // Initialize the bar chart with the new data
                         initBarChart(labels, salesData);
                     })
                     .catch(error => {
@@ -460,7 +447,6 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Populate top products
                         const productsList = document.getElementById('topProducts');
                         productsList.innerHTML = '';
                         data.topSellingProducts.forEach(product => {
@@ -471,7 +457,6 @@
                     </li>`;
                         });
 
-                        // Populate top brands
                         const brandsList = document.getElementById('topBrands');
                         brandsList.innerHTML = '';
                         data.topSellingBrands.forEach(brand => {
@@ -482,7 +467,6 @@
                     </li>`;
                         });
 
-                        // Populate top types
                         const typesList = document.getElementById('topTypes');
                         typesList.innerHTML = '';
                         data.topSellingTypes.forEach(type => {

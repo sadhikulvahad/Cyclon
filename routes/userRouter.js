@@ -46,6 +46,7 @@ router.post("/applyCoupon", userAuth,profileController.checkCouponCode)
 router.get("/download-invoice/:id", userAuth, profileController.downloadInvoice)
 router.post("/generateReferral",userAuth,profileController.refferal)
 router.get("/orderFailed",userAuth,profileController.getFailed)
+router.post("/reviews", userAuth,profileController.addReview)
 
 
 

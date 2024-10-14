@@ -607,8 +607,6 @@
     </div>
 
 
-
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
     <script>
         function viewImageAndOpenCropperModal(event, modalId, croppedImageInputId, cropBtnId, previewImageId) {
@@ -653,8 +651,6 @@
                         const dt = new DataTransfer();
                         dt.items.add(croppedFile);
                         document.getElementById(croppedImageInputId).files = dt.files;
-                        console.log(document.getElementById(croppedImageInputId).files)
-                        // Revoke the object URL after a short delay to ensure it's loaded
                         setTimeout(() => {
                             URL.revokeObjectURL(croppedImageUrl);
                         }, 1000);
@@ -691,7 +687,7 @@
                         errorElement.textContent = 'Invalid file type. Only JPEG, PNG, and JPG are allowed.';
                         isValid = false;
                     }
-                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                    if (file.size > 2 * 1024 * 1024) { 
                         errorElement.textContent = 'File size exceeds 2MB.';
                         isValid = false;
                     }
@@ -733,7 +729,6 @@
         });
 
         $(document).ready(function () {
-            // Function to handle file input change
             function handleFileInputChange(event) {
                 const file = event.target.files[0];
                 const previewId = event.target.id.replace('Input', 'Preview');
@@ -747,20 +742,16 @@
                 }
             }
 
-            // Attach change event listeners to file inputs
             $('#editImage1Input, #editImage2Input, #editImage3Input, #editImage4Input').on('change', handleFileInputChange);
 
-            // When edit modal is shown, populate image previews
             $('#editProductModal').on('show.bs.modal', function (event) {
                 const button = $(event.relatedTarget);
                 const productId = button.data('id');
 
-                // Fetch product data including images
                 $.ajax({
                     url: `/admin/editProduct/${productId}`,
                     type: 'GET',
                     success: function (productData) {
-                        // Populate form fields
                         $('#editProductId').val(productData._id);
                         $('#editProductName').val(productData.productName);
                         $('#editBrand').val(productData.brand);
@@ -772,7 +763,6 @@
                         $('#editBrakeStyle').val(productData.brakeStyle);
                         $('#editNumberOfGears').val(productData.numberOfGears);
 
-                        // Load images
                         for (let i = 0; i < 4; i++) {
                             if (productData.productImages[i]) {
                                 $(`#editImage${i + 1}Preview`).attr('src', `/uploads/resized/${productData.productImages[i]}`).show();
@@ -794,7 +784,6 @@
 
                 var formData = new FormData(this);
 
-                // Add information about existing and new images
                 for (let i = 1; i <= 4; i++) {
                     const inputFile = $(`#editImage${i}Input`)[0].files[0];
                     const existingImageSrc = $(`#editImage${i}Preview`).attr('src');
@@ -827,14 +816,12 @@
             });
         });
 
-        // Attach validateForm function to form submission
         document.querySelector('form').addEventListener('submit', function (event) {
             if (!validateForm()) {
                 event.preventDefault();
             }
         });
 
-        // pagination
         $(document).ready(function () {
             $('#productTable').DataTable({
                 paging: true,
@@ -850,13 +837,10 @@
             $('#productTable').on('click', '.btn-primary.btn-sm.ml-2', function () {
                 const productId = $(this).data('id');
 
-                // Make an AJAX request to fetch the product details from the backend
                 $.ajax({
                     url: `/admin/editProduct/${productId}`,
                     method: 'GET',
                     success: function (productData) {
-                        console.log(productData)
-                        // Populate the modal fields with the product details
                         $('#editProductId').val(productData._id);
                         $('#editProductName').val(productData.productName);
                         $('#editBrand').val(productData.brand);
@@ -868,13 +852,11 @@
                         $('#editBrakeStyle').val(productData.brakeStyle);
                         $('#editNumberOfGears').val(productData.numberOfGears);
 
-                        // Load images
                         $('#editImage1Preview').attr('src', `/uploads/resized/${productData.productImages[0]}`);
                         $('#editImage2Preview').attr('src', `/uploads/resized/${productData.productImages[1]}`);
                         $('#editImage3Preview').attr('src', `/uploads/resized/${productData.productImages[2]}`);
                         $('#editImage4Preview').attr('src', `/uploads/resized/${productData.productImages[3]}`);
 
-                        // Show the modal
                         $('#editProductModal').modal('show');
                     },
                     error: function (err) {
