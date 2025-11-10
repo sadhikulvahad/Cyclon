@@ -163,8 +163,6 @@ const verifyOtp = async (req, res) => {
 
             const refferedUser = await User.findOne({ referalCode: req.session.userData.referralCode })
 
-            
-
             const passwordHash = await securePassword(user.password)
             const saveUserData = new User({
                 name: user.name,

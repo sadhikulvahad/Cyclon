@@ -415,7 +415,7 @@
                         }
                     } else {
                         console.error('Failed to fetch addresses');
-                        showError('Failed to load addresses. Please try again.');
+                        showError('Failed to load addresses. Please try again.123');
                     }
                 },
                 error: function (error) {
@@ -435,16 +435,12 @@
                     if (response.success) {
                         localStorage.setItem('selectedAddressId', addressId);
                         updateAddressDisplay(response.address);
-                        $('#changeAddressModal').modal('hide');
+                        $('#changeAddressModal').modal('hide');   
                     } else {
                         console.error('Failed to select address');
                         showError('Failed to select address. Please try again.');
                     }
                 },
-                error: function (error) {
-                    console.error('Error selecting address:', error);
-                    showError('Failed to select the address. Please try again.');
-                }
             });
         });
 
