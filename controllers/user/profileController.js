@@ -12,6 +12,7 @@ const { success } = require("./authController");
 const fs = require("fs");
 const path = require("path");
 const { jsPDF } = require("jspdf");
+const mongoose = require("mongoose");
 require("jspdf-autotable");
 
 const profile = async (req, res) => {

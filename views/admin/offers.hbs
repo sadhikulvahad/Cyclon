@@ -277,6 +277,7 @@
                 })
                     .then(response => response.json())
                     .then(data => {
+                        console.log('Response data:', data);
                         if (data.success) {
                             Swal.fire({
                                 icon: "success",
@@ -291,8 +292,10 @@
                             Swal.fire({
                                 icon: "error",
                                 title: "Oops...",
-                                text: "Something went wrong while adding the offer"
-                            })
+                                text: data.error || "Something went wrong while adding the offer"
+                            }).then(() => {
+                                window.location.reload();
+                            });
                         }
                     })
                     .catch(error => {

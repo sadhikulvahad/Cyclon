@@ -1,4 +1,4 @@
-var createError = require('http-errors');
+
 var express = require('express');
 const Razorpay = require('razorpay');
 const bodyParser = require('body-parser');
@@ -23,7 +23,7 @@ const adminRouter = require('./routes/adminRouter')
 
 var app = express();
 connectDB()
-hbs.registerPartials(path.join(__dirname, 'views/partials'));
+hbs.registerPartials(path.join(__dirname, 'views/Partials'));
 
 hbs.registerHelper('eq', function (a, b) {
   return a == b;
@@ -86,7 +86,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -113,10 +113,6 @@ app.use(noCache())
 app.use('/', userRouter);
 app.use('/', authRouter);
 app.use('/admin', adminRouter)
-
-
-
-app.use('/uploads', express.static('uploads'))
 
 
 // catch 404 and forward to error handler

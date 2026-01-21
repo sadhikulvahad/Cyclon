@@ -168,7 +168,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="editExpiryDate" class="form-label">Expiry Date</label>
-                            <input type="date" name="expireOn" id="editExpiryDate" class="form-control" required>
+                            <input type="date" name="expireOn" id="editExpiryDate" class="form-control" required min="">
                         </div>
                     </form>
                 </div>
@@ -185,6 +185,15 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('editExpiryDate').setAttribute('min', today);
+        });
+    </script>
+
 
     <script>
         $(document).ready(function () {

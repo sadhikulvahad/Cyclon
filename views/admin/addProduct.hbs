@@ -52,19 +52,19 @@
         padding: 20px;
     }
 
-    .image-cropper {
-        max-height: 80vh;
-        width: 100%;
-        object-fit: contain;
-    }
-
     .modal-body {
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-    }
+    padding: 10px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.image-cropper {
+    max-height: 65vh;
+    width: auto;
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+}
 
     .modal-body img {
         width: 100%;
@@ -96,6 +96,7 @@
     .modal-footer {
         border-top: 1px solid #dee2e6;
     }
+
 </style>
 
 <body>
@@ -607,40 +608,38 @@
     </div>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
     <script>
         function viewImageAndOpenCropperModal(event, modalId, croppedImageInputId, cropBtnId, previewImageId) {
+            console.log('File input changed', event, modalId, croppedImageInputId, cropBtnId, previewImageId);
             const file = event.target.files[0];
             const reader = new FileReader();
-
+            console.log('File selected:', file);    
             reader.onload = function (e) {
                 const cropperImage = document.getElementById('cropperImage' + modalId.slice(-1));
-                cropperImage.src = e.target.result;
-
+                cropperImage.src = e.target.result; 
+                console.log('Image loaded for cropping:', cropperImage.src);
                 if (cropperImage.cropper) {
                     cropperImage.cropper.destroy();
                 }
 
                 const modal = new bootstrap.Modal(document.getElementById(modalId));
                 modal.show();
-
                 const cropper = new Cropper(cropperImage, {
-                    aspectRatio: NaN,
+                    aspectRatio: 1,
                     viewMode: 1,
-                    responsive: true,
-                    autoCropArea: 1,
                 });
-
+                console.log('Cropper initialized', cropper);
                 const cropBtn = document.getElementById(cropBtnId);
 
                 cropBtn.removeEventListener('click', cropAndCloseModal);
 
                 function cropAndCloseModal() {
                     const canvas = cropper.getCroppedCanvas({
-                        width: 600,
-                        height: 600,
+                        width: 800,
+                        height: 800,
                     });
-
+                    console.log('Cropped canvas created', canvas);
                     canvas.toBlob(function (blob) {
                         const croppedImageUrl = URL.createObjectURL(blob);
                         const previewImage = document.getElementById(previewImageId);
@@ -651,6 +650,8 @@
                         const dt = new DataTransfer();
                         dt.items.add(croppedFile);
                         document.getElementById(croppedImageInputId).files = dt.files;
+
+                // Revoke the object URL after a short delay to ensure it's loaded
                         setTimeout(() => {
                             URL.revokeObjectURL(croppedImageUrl);
                         }, 1000);
@@ -666,11 +667,16 @@
             reader.readAsDataURL(file);
         }
 
+
         $(document).ready(function () {
             $('.modal-footer').on('click', '.btn-secondary', function () {
                 const modalId = $(this).closest('.modal').attr('id');
                 $('#' + modalId).modal('hide');
             });
+        });
+
+        $(document).on('click', '.modal .close', function() {
+            $(this).closest('.modal').modal('hide');
         });
 
         function validateForm() {
@@ -698,6 +704,31 @@
             });
             return isValid;
         }
+
+        function showInstantPreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+// Call it for all four inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            showInstantPreview('cropped1', 'previewImage1');
+            showInstantPreview('cropped2', 'previewImage2');
+            showInstantPreview('cropped3', 'previewImage3');
+            showInstantPreview('cropped4', 'previewImage4');
+        });
 
         $(document).ready(function () {
             $('#addProductForm').on('submit', function (e) {
